@@ -23,4 +23,18 @@ const getPageAccessToken = (accountId: string, pageId: string) => {
     throw new Error('Account not found');
   }
   
-  const page = account.pages.find((p: any) => p.id === pageId)
+  const page = account.pages.find((p: any) => p.id === pageId);
+  if (!page) {
+    throw new Error('Page not found');
+  }
+  
+  return page.access_token;
+};
+
+export async function GET(request: Request) {
+  try {
+    return NextResponse.json({ message: 'Leads API endpoint' });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
