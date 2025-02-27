@@ -13,14 +13,7 @@ const nextConfig = {
   output: 'standalone',
   // Move outputFileTracingExcludes under experimental
   experimental: {
-    outputFileTracingExcludes: {
-      '*': [
-        'node_modules/@swc/core-linux-x64-gnu',
-        'node_modules/@swc/core-linux-x64-musl',
-        'node_modules/@esbuild/linux-x64',
-      ],
-    },
-    serverActions: true
+    serverActions: true,
   },
   // Disable source maps in production
   productionBrowserSourceMaps: false,
@@ -30,6 +23,14 @@ const nextConfig = {
   reactStrictMode: true,
   // Disable x-powered-by header
   poweredByHeader: false,
+  // Add tracing excludes at root level
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/@swc/core-linux-x64-gnu',
+      'node_modules/@swc/core-linux-x64-musl',
+      'node_modules/@esbuild/linux-x64',
+    ],
+  },
 };
 
 module.exports = nextConfig;
