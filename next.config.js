@@ -16,6 +16,8 @@ const nextConfig = {
       ],
     },
   },
+  // Add output configuration for dynamic routes
+  output: 'standalone'
 };
 
 module.exports = nextConfig;
