@@ -98,7 +98,7 @@ export function AccountManager() {
                 <CardDescription>You need to add an account before you can add a page</CardDescription>
               </CardHeader>
               <CardContent>
-                <Alert variant="warning" className="mt-2">
+                <Alert variant="default" className="mt-2 border-yellow-500 text-yellow-700">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
                     Please go to the "Add Account" tab first to create an account.
