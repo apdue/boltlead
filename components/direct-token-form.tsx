@@ -470,9 +470,8 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
                     <Select 
                       value={selectedPageId} 
                       onValueChange={handlePageSelect}
-                      className="flex-1"
                     >
-                      <SelectTrigger id="savedPage">
+                      <SelectTrigger id="savedPage" className="flex-1">
                         <SelectValue placeholder="Select a saved page" />
                       </SelectTrigger>
                       <SelectContent>
