@@ -25,8 +25,11 @@ export function PermanentPages({ onPageSelected, accounts }: PermanentPagesProps
   const [permanentPages, setPermanentPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const fetchPermanentPages = async () => {
+    if (!mounted) return;
+
     try {
       setLoading(true);
       const response = await fetch('/api/accounts/permanent-pages');
@@ -46,10 +49,18 @@ export function PermanentPages({ onPageSelected, accounts }: PermanentPagesProps
   };
 
   useEffect(() => {
-    fetchPermanentPages();
+    setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (mounted) {
+      fetchPermanentPages();
+    }
+  }, [mounted]);
+
   const handleDeletePage = async (pageId: string) => {
+    if (!mounted) return;
+
     try {
       setDeleteLoading(pageId);
       

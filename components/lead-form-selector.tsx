@@ -90,11 +90,16 @@ export function LeadFormSelector({
   const [deliveryMethod, setDeliveryMethod] = useState<'download' | 'email'>('download');
   const [emailAddresses, setEmailAddresses] = useState<string[]>(['']);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchLeadForms = async () => {
-      // Skip fetching if we already have initialLeadForms
-      if (initialLeadForms.length > 0) {
+      // Skip if not mounted or if we already have initialLeadForms
+      if (!mounted || initialLeadForms.length > 0) {
         setLoading(false);
         return;
       }
@@ -135,7 +140,7 @@ export function LeadFormSelector({
     
     // Set default date range (yesterday)
     handlePredefinedRangeChange(PREDEFINED_RANGES.YESTERDAY);
-  }, [page.id]);
+  }, [page.id, mounted]);
 
   // Apply predefined date range
   useEffect(() => {

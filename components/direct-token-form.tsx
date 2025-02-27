@@ -162,9 +162,11 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('accounts');
   const [selectedAccount, setSelectedAccount] = useState<string>('Aachar'); // Default to Aachar account
+  const [mounted, setMounted] = useState(false);
 
   // Load saved pages from localStorage on component mount
   useEffect(() => {
+    setMounted(true);
     const storedPages = localStorage.getItem('directPages');
     if (storedPages) {
       try {
@@ -180,12 +182,14 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
 
   // Save pages to localStorage whenever they change
   useEffect(() => {
-    if (savedPages.length > 0) {
+    if (mounted && savedPages.length > 0) {
       localStorage.setItem('directPages', JSON.stringify(savedPages));
     }
-  }, [savedPages]);
+  }, [savedPages, mounted]);
 
   const handleConnect = async () => {
+    if (!mounted) return;
+
     let currentPageId = '';
     let currentPageToken = '';
     let currentPageName = '';
@@ -251,51 +255,24 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
         );
       }
       
-      const data = await response.json().catch(() => ({ data: [] }));
-      
-      if (!data.data || data.data.length === 0) {
-        toast.warning('Connected successfully, but no lead forms found for this page');
-      } else {
-        toast.success(`Connected successfully! Found ${data.data.length} lead forms`);
-        setLeadForms(data.data);
-      }
-      
-      // If using manually entered details and connection was successful, save the page
-      if (!selectedPageId) {
-        // Check if page already exists
-        const existingPageIndex = savedPages.findIndex(page => page.id === currentPageId);
-        
-        if (existingPageIndex !== -1) {
-          // Update existing page
-          const updatedPages = [...savedPages];
-          updatedPages[existingPageIndex] = {
-            id: currentPageId,
-            name: currentPageName,
-            access_token: currentPageToken
-          };
-          setSavedPages(updatedPages);
-          toast.success('Page details updated');
-        } else {
-          // Add new page
-          setSavedPages([...savedPages, {
-            id: currentPageId,
-            name: currentPageName,
-            access_token: currentPageToken
-          }]);
-          toast.success('Page saved for future use');
-        }
-        
-        // Clear form
-        setPageId('');
-        setPageName('');
-        setPageToken('');
-      }
-      
+      const data = await response.json();
+      setLeadForms(data.data || []);
       setConnected(true);
-      setSelectedPageId(selectedPageId || currentPageId);
+      
+      // Save page to localStorage if it's not already saved
+      if (!savedPages.some(page => page.id === currentPageId)) {
+        const newPage = {
+          id: currentPageId,
+          name: currentPageName,
+          access_token: currentPageToken
+        };
+        setSavedPages(prev => [...prev, newPage]);
+      }
+      
+      toast.success('Successfully connected to Facebook page');
     } catch (error: any) {
-      console.error('Error connecting with token:', error.message || error);
-      toast.error(error.message || 'Failed to connect with provided token. Please check your Page ID and Access Token.');
+      console.error('Error connecting to Facebook:', error);
+      toast.error(error.message || 'Failed to connect to Facebook');
       setConnected(false);
     } finally {
       setLoading(false);
