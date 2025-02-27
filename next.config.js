@@ -6,7 +6,9 @@ const nextConfig = {
   images: { unoptimized: true },
   // Ensure data directory is preserved during builds
   distDir: '.next',
-  // Properly place outputFileTracingExcludes under experimental
+  // Add output configuration for dynamic routes
+  output: 'standalone',
+  // Move outputFileTracingExcludes under experimental
   experimental: {
     outputFileTracingExcludes: {
       '*': [
@@ -16,8 +18,6 @@ const nextConfig = {
       ],
     },
   },
-  // Add output configuration for dynamic routes
-  output: 'standalone'
 };
 
 module.exports = nextConfig;
