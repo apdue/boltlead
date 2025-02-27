@@ -254,27 +254,32 @@ export function LeadFormSelector({
     try {
       setLoadingLeads(true);
       
-      // Check if we already have cached leads for this form
-      const cacheKey = `${formId}`;
-      if (leadsCache.has(cacheKey)) {
-        const cachedData = leadsCache.get(cacheKey) || [];
-        setCachedLeads(cachedData);
-        setIsCacheLoaded(true);
-        filterLeadsByDateRange(cachedData, range);
-        setLoadingLeads(false);
-        return;
+      // For static export, we need to directly call the Facebook Graph API
+      const url = `https://graph.facebook.com/v19.0/${formId}/leads?access_token=${encodeURIComponent(page.access_token)}&limit=${MAX_LEADS}`;
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Failed to fetch leads');
       }
       
-      // If not in cache, fetch leads
-      await fetchAndCacheLeads(formId);
+      const data = await response.json();
+      const leads = data.data || [];
       
-      // Now filter the cached leads by date range
-      const cachedData = leadsCache.get(cacheKey) || [];
-      filterLeadsByDateRange(cachedData, range);
+      // Cache the leads
+      setCachedLeads(leads);
+      setIsCacheLoaded(true);
+      
+      // Filter leads by date range
+      filterLeadsByDateRange(leads, range);
+      
+      // Check if there are more leads
+      setHasMoreLeads(!!data.paging?.next);
+      setLeadCount(leads.length);
     } catch (error: any) {
       console.error('Error fetching leads:', error);
       toast.error('Failed to load leads: ' + (error.message || 'Unknown error'));
-      setLeadData([]);
     } finally {
       setLoadingLeads(false);
     }
@@ -652,8 +657,9 @@ export function LeadFormSelector({
     }
   };
 
-  const handlePredefinedRangeChange = (value: string) => {
-    setSelectedDateRange(value);
+  // Function to handle predefined date range changes
+  const handlePredefinedRangeChange = (range: string) => {
+    setSelectedDateRange(range);
   };
 
   // Function to handle email address changes

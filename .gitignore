@@ -31,3 +31,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 *.zip
+
+# environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
