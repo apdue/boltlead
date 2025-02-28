@@ -11,9 +11,16 @@ const nextConfig = {
   distDir: '.next',
   // Add output configuration for dynamic routes
   output: 'standalone',
-  // Move outputFileTracingExcludes under experimental
+  // Configure experimental features
   experimental: {
     serverActions: true,
+    outputFileTracingExcludes: {
+      '*': [
+        'node_modules/@swc/core-linux-x64-gnu',
+        'node_modules/@swc/core-linux-x64-musl',
+        'node_modules/@esbuild/linux-x64',
+      ],
+    },
   },
   // Disable source maps in production
   productionBrowserSourceMaps: false,
@@ -23,14 +30,6 @@ const nextConfig = {
   reactStrictMode: true,
   // Disable x-powered-by header
   poweredByHeader: false,
-  // Add tracing excludes at root level
-  outputFileTracingExcludes: {
-    '*': [
-      'node_modules/@swc/core-linux-x64-gnu',
-      'node_modules/@swc/core-linux-x64-musl',
-      'node_modules/@esbuild/linux-x64',
-    ],
-  },
 };
 
 module.exports = nextConfig;
