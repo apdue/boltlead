@@ -25,11 +25,29 @@ const nextConfig = {
   // Disable source maps in production
   productionBrowserSourceMaps: false,
   // Increase build timeout if needed
-  staticPageGenerationTimeout: 120,
+  staticPageGenerationTimeout: 180,
   // Enable strict mode for better error catching
   reactStrictMode: true,
   // Disable x-powered-by header
   poweredByHeader: false,
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': '.',
+    };
+    return config;
+  },
+  transpilePackages: [
+    '@radix-ui/react-primitive',
+    '@radix-ui/react-dialog',
+    '@radix-ui/react-select',
+    '@radix-ui/react-tabs',
+    '@radix-ui/react-popover',
+    '@radix-ui/react-arrow',
+    '@radix-ui/react-checkbox',
+    '@radix-ui/react-dismissable-layer',
+    '@radix-ui/react-focus-scope'
+  ]
 };
 
 module.exports = nextConfig;

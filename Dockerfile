@@ -23,6 +23,8 @@ COPY . .
 # Disable Next.js telemetry during the build
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Fix for Radix UI components
+RUN echo '{"presets":["next/babel"]}' > .babelrc
 RUN npm run build
 
 # Production image, copy all the files and run next
@@ -35,10 +37,8 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-
 # Set the correct permission for prerender cache
-RUN mkdir .next
+RUN mkdir -p .next
 RUN chown nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
