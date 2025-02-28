@@ -22,10 +22,10 @@ COPY . .
 
 # Disable Next.js telemetry during the build
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Fix for Radix UI components
-RUN echo '{"presets":["next/babel"]}' > .babelrc
-RUN npm run build
+# Build the application with a simplified approach
+RUN npm run build || (echo "Build failed, retrying with NODE_ENV=production" && NODE_ENV=production npm run build)
 
 # Production image, copy all the files and run next
 FROM base AS runner
