@@ -59,7 +59,7 @@ const PREDEFINED_RANGES = {
 };
 
 // Maximum number of leads to fetch
-const MAX_LEADS = 400;
+const MAX_LEADS = 700;
 
 // Cache for leads data
 const leadsCache = new Map<string, any[]>();
