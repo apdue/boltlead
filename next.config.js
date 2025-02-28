@@ -11,7 +11,18 @@ const nextConfig = {
   experimental: {
     serverActions: true,
   },
+  // Explicitly enable SWC and disable Babel
+  swcMinify: false,
+  compiler: {
+    // Enables the styled-components SWC transform
+    styledComponents: true
+  },
   webpack: (config) => {
+    // Disable minification in webpack as well
+    if (config.optimization && config.optimization.minimizer) {
+      config.optimization.minimizer = [];
+    }
+    
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': '.',

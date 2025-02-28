@@ -1,11 +1,11 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 
-const inter = Inter({ subsets: ['latin'] });
+// Define a className instead of using the Inter font object
+const fontClassName = 'font-sans'; // We'll use Tailwind's font-sans which typically maps to Inter or a similar font
 
 export const metadata: Metadata = {
   title: 'Facebook Lead Forms Manager',
@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={fontClassName}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
