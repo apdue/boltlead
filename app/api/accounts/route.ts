@@ -1,66 +1,54 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const accountsFilePath = path.join(process.cwd(), 'data', 'accounts.json');
-
-// Ensure the data directory exists
-const ensureDataDir = () => {
-  const dataDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-};
-
-// Get accounts data
-const getAccountsData = () => {
-  ensureDataDir();
-  
-  if (!fs.existsSync(accountsFilePath)) {
-    // Create default accounts file if it doesn't exist
-    const defaultData = {
-      accounts: [],
-      currentAccountId: '',
-      lastUpdated: new Date().toISOString()
-    };
-    fs.writeFileSync(accountsFilePath, JSON.stringify(defaultData, null, 2));
-    return defaultData;
-  }
-  
-  try {
-    const fileContent = fs.readFileSync(accountsFilePath, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    console.error('Error reading accounts file:', error);
-    // If file is corrupted, create a new one
-    const defaultData = {
-      accounts: [],
-      currentAccountId: '',
-      lastUpdated: new Date().toISOString()
-    };
-    fs.writeFileSync(accountsFilePath, JSON.stringify(defaultData, null, 2));
-    return defaultData;
-  }
-};
-
-// Save accounts data
-const saveAccountsData = (data: any) => {
-  ensureDataDir();
-  try {
-    fs.writeFileSync(accountsFilePath, JSON.stringify(data, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error saving accounts data:', error);
-    return false;
-  }
-};
+import { supabase } from '@/lib/supabase';
+import { Account } from '@/lib/types';
 
 export async function GET() {
   try {
-    const accountsData = getAccountsData();
-    return NextResponse.json(accountsData);
+    // Get all accounts
+    const { data: accounts, error: accountsError } = await supabase
+      .from('accounts')
+      .select('*');
+    
+    if (accountsError) {
+      console.error('Error fetching accounts:', accountsError);
+      return NextResponse.json(
+        { error: 'Failed to fetch accounts' },
+        { status: 500 }
+      );
+    }
+    
+    // Get current account ID
+    const { data: currentAccountData, error: currentAccountError } = await supabase
+      .from('current_account')
+      .select('*')
+      .eq('id', '1')
+      .single();
+    
+    if (currentAccountError && currentAccountError.code !== 'PGRST116') {
+      console.error('Error fetching current account:', currentAccountError);
+    }
+    
+    // Get pages for each account
+    for (const account of accounts || []) {
+      const { data: pages, error: pagesError } = await supabase
+        .from('pages')
+        .select('*')
+        .eq('account_id', account.id);
+      
+      if (pagesError) {
+        console.error(`Error fetching pages for account ${account.id}:`, pagesError);
+      } else {
+        account.pages = pages || [];
+      }
+    }
+    
+    return NextResponse.json({
+      accounts: accounts || [],
+      currentAccountId: currentAccountData?.account_id || (accounts && accounts.length > 0 ? accounts[0].id : ''),
+      lastUpdated: currentAccountData?.last_updated || new Date().toISOString()
+    });
   } catch (error) {
-    console.error('Error fetching accounts:', error);
+    console.error('Error in GET /api/accounts:', error);
     return NextResponse.json(
       { error: 'Failed to fetch accounts' },
       { status: 500 }
@@ -88,40 +76,55 @@ export async function POST(request: Request) {
       );
     }
     
-    const accountsData = getAccountsData();
-    console.log('Current accounts data:', JSON.stringify(accountsData));
+    // Convert from camelCase to snake_case for Supabase
+    const accountData: Omit<Account, 'created_at' | 'updated_at'> = {
+      id: data.id,
+      name: data.name,
+      app_id: data.appId,
+      app_secret: data.appSecret,
+      short_lived_token: data.shortLivedToken,
+      long_lived_token: data.longLivedToken || '',
+      long_lived_token_expiry: data.longLivedTokenExpiry || new Date().toISOString(),
+    };
     
-    // Check if account already exists
-    const existingAccountIndex = accountsData.accounts.findIndex(
-      (account: any) => account.id === data.id
-    );
+    // Insert or update account
+    const { error: accountError } = await supabase
+      .from('accounts')
+      .upsert(accountData, { onConflict: 'id' });
     
-    if (existingAccountIndex !== -1) {
-      // Update existing account
-      accountsData.accounts[existingAccountIndex] = {
-        ...accountsData.accounts[existingAccountIndex],
-        ...data,
-      };
-    } else {
-      // Add new account
-      accountsData.accounts.push({
-        ...data,
-        pages: data.pages || [],
-        longLivedToken: data.longLivedToken || '',
-        longLivedTokenExpiry: data.longLivedTokenExpiry || '',
-      });
-      
-      // Set as current account if it's the first one or if no current account is set
-      if (accountsData.accounts.length === 1 || !accountsData.currentAccountId) {
-        accountsData.currentAccountId = data.id;
-      }
+    if (accountError) {
+      console.error('Error inserting/updating account:', accountError);
+      throw new Error('Failed to save account to database');
     }
     
-    accountsData.lastUpdated = new Date().toISOString();
-    const saveResult = saveAccountsData(accountsData);
+    // Check if this is the first account or if no current account is set
+    const { data: currentAccountData, error: currentAccountError } = await supabase
+      .from('current_account')
+      .select('*')
+      .eq('id', '1')
+      .single();
     
-    if (!saveResult) {
-      throw new Error('Failed to save account data to file');
+    const { count, error: countError } = await supabase
+      .from('accounts')
+      .select('*', { count: 'exact', head: true });
+    
+    if (countError) {
+      console.error('Error counting accounts:', countError);
+    }
+    
+    // Set as current account if it's the first one or if no current account is set
+    if (count === 1 || (!currentAccountData && !currentAccountError)) {
+      const { error: setCurrentError } = await supabase
+        .from('current_account')
+        .upsert({
+          id: '1',
+          account_id: data.id,
+          last_updated: new Date().toISOString()
+        }, { onConflict: 'id' });
+      
+      if (setCurrentError) {
+        console.error('Error setting current account:', setCurrentError);
+      }
     }
     
     console.log('Account saved successfully');

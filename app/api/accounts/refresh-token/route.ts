@@ -1,57 +1,42 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
 
-const accountsFilePath = path.join(process.cwd(), 'data', 'accounts.json');
-
-// Get accounts data
-const getAccountsData = () => {
-  if (!fs.existsSync(accountsFilePath)) {
-    return { accounts: [], currentAccountId: '', lastUpdated: new Date().toISOString() };
-  }
-  
-  const fileContent = fs.readFileSync(accountsFilePath, 'utf8');
-  return JSON.parse(fileContent);
-};
-
-// Save accounts data
-const saveAccountsData = (data: any) => {
-  const dataDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  
-  fs.writeFileSync(accountsFilePath, JSON.stringify(data, null, 2));
-};
-
-// Convert short-lived token to long-lived token
 async function convertToLongLivedToken(appId: string, appSecret: string, shortLivedToken: string) {
-  const url = `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortLivedToken}`;
-  
-  const response = await fetch(url);
-  
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || 'Failed to convert token');
+  try {
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortLivedToken}`
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to exchange token');
+    }
+    
+    const data = await response.json();
+    return data.access_token;
+  } catch (error: any) {
+    console.error('Error converting to long-lived token:', error);
+    throw new Error(`Failed to convert to long-lived token: ${error.message}`);
   }
-  
-  const data = await response.json();
-  return data.access_token;
 }
 
-// Get page access tokens using the long-lived user token
 async function getPageAccessTokens(userId: string, longLivedToken: string) {
-  const url = `https://graph.facebook.com/v19.0/${userId}/accounts?access_token=${longLivedToken}`;
-  
-  const response = await fetch(url);
-  
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || 'Failed to get page tokens');
+  try {
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${userId}/accounts?access_token=${longLivedToken}`
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get page access tokens');
+    }
+    
+    const data = await response.json();
+    return data.data;
+  } catch (error: any) {
+    console.error('Error getting page access tokens:', error);
+    throw new Error(`Failed to get page access tokens: ${error.message}`);
   }
-  
-  const data = await response.json();
-  return data.data;
 }
 
 export async function POST(request: Request) {
@@ -65,34 +50,26 @@ export async function POST(request: Request) {
       );
     }
     
-    const accountsData = getAccountsData();
+    // Get account from Supabase
+    const { data: account, error: accountError } = await supabase
+      .from('accounts')
+      .select('*')
+      .eq('id', accountId)
+      .single();
     
-    // Find the account
-    const accountIndex = accountsData.accounts.findIndex(
-      (account: any) => account.id === accountId
-    );
-    
-    if (accountIndex === -1) {
+    if (accountError || !account) {
+      console.error('Error fetching account:', accountError);
       return NextResponse.json(
         { error: 'Account not found' },
         { status: 404 }
       );
     }
     
-    const account = accountsData.accounts[accountIndex];
-    
-    if (!account.appId || !account.appSecret || !account.shortLivedToken) {
-      return NextResponse.json(
-        { error: 'Account is missing required credentials' },
-        { status: 400 }
-      );
-    }
-    
     // Convert short-lived token to long-lived token
     const longLivedToken = await convertToLongLivedToken(
-      account.appId,
-      account.appSecret,
-      account.shortLivedToken
+      account.app_id,
+      account.app_secret,
+      account.short_lived_token
     );
     
     // Calculate expiry date (60 days from now)
@@ -100,46 +77,124 @@ export async function POST(request: Request) {
     expiryDate.setDate(expiryDate.getDate() + 60);
     
     // Update account with new token
-    accountsData.accounts[accountIndex] = {
-      ...account,
-      longLivedToken,
-      longLivedTokenExpiry: expiryDate.toISOString(),
-    };
+    const { error: updateError } = await supabase
+      .from('accounts')
+      .update({
+        long_lived_token: longLivedToken,
+        long_lived_token_expiry: expiryDate.toISOString()
+      })
+      .eq('id', accountId);
+    
+    if (updateError) {
+      console.error('Error updating account with new token:', updateError);
+      throw new Error('Failed to update account with new token');
+    }
     
     // Get page access tokens
     try {
-      // We need to get the user ID first
-      const userResponse = await fetch(`https://graph.facebook.com/v19.0/me?access_token=${longLivedToken}`);
+      // Get user ID from the token
+      const userResponse = await fetch(
+        `https://graph.facebook.com/v18.0/me?access_token=${longLivedToken}`
+      );
       
       if (!userResponse.ok) {
-        throw new Error('Failed to get user ID');
+        const errorData = await userResponse.json();
+        throw new Error(errorData.error?.message || 'Failed to get user ID');
       }
       
       const userData = await userResponse.json();
       const userId = userData.id;
       
-      // Now get the page tokens
+      // Get page access tokens
       const pages = await getPageAccessTokens(userId, longLivedToken);
       
-      // Update pages with new tokens
-      if (pages && pages.length > 0) {
-        accountsData.accounts[accountIndex].pages = pages.map((page: any) => ({
-          id: page.id,
-          name: page.name,
-          access_token: page.access_token,
-        }));
+      // Update existing pages with new tokens
+      if (pages && Array.isArray(pages)) {
+        for (const page of pages) {
+          // Check if page exists in database
+          const { data: existingPage, error: pageError } = await supabase
+            .from('pages')
+            .select('*')
+            .eq('id', page.id)
+            .eq('account_id', accountId)
+            .single();
+          
+          if (pageError && pageError.code !== 'PGRST116') {
+            console.error(`Error checking page ${page.id}:`, pageError);
+            continue;
+          }
+          
+          if (existingPage) {
+            // Update existing page
+            const { error: updatePageError } = await supabase
+              .from('pages')
+              .update({
+                access_token: page.access_token
+              })
+              .eq('id', page.id)
+              .eq('account_id', accountId);
+            
+            if (updatePageError) {
+              console.error(`Error updating page ${page.id}:`, updatePageError);
+            }
+          } else {
+            // Insert new page
+            const { error: insertPageError } = await supabase
+              .from('pages')
+              .insert({
+                id: page.id,
+                name: page.name,
+                access_token: page.access_token,
+                account_id: accountId
+              });
+            
+            if (insertPageError) {
+              console.error(`Error inserting page ${page.id}:`, insertPageError);
+            }
+          }
+        }
       }
-    } catch (pageError) {
-      console.error('Error updating page tokens:', pageError);
-      // Continue even if page token update fails
+    } catch (pageError: any) {
+      console.error('Error refreshing page tokens:', pageError);
+      // Continue with the token refresh even if page token refresh fails
     }
     
-    accountsData.lastUpdated = new Date().toISOString();
-    saveAccountsData(accountsData);
+    // Get updated account
+    const { data: updatedAccount, error: getUpdatedError } = await supabase
+      .from('accounts')
+      .select('*')
+      .eq('id', accountId)
+      .single();
+    
+    if (getUpdatedError) {
+      console.error('Error fetching updated account:', getUpdatedError);
+      throw new Error('Failed to fetch updated account');
+    }
+    
+    // Get pages for the account
+    const { data: pages, error: pagesError } = await supabase
+      .from('pages')
+      .select('*')
+      .eq('account_id', accountId);
+    
+    if (pagesError) {
+      console.error('Error fetching pages:', pagesError);
+    } else {
+      updatedAccount.pages = pages || [];
+    }
     
     return NextResponse.json({
       success: true,
-      account: accountsData.accounts[accountIndex],
+      account: {
+        id: updatedAccount.id,
+        name: updatedAccount.name,
+        appId: updatedAccount.app_id,
+        appSecret: updatedAccount.app_secret,
+        shortLivedToken: updatedAccount.short_lived_token,
+        longLivedToken: updatedAccount.long_lived_token,
+        longLivedTokenExpiry: updatedAccount.long_lived_token_expiry,
+        pages: updatedAccount.pages
+      }
     });
   } catch (error: any) {
     console.error('Error refreshing token:', error);
