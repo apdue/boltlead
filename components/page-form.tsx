@@ -55,25 +55,30 @@ export function PageForm({ accountId, onPageAdded, accounts }: PageFormProps) {
     try {
       setLoading(true);
       
+      // Format the data to match what the API expects
+      const pageData = {
+        accountId: selectedAccountId,
+        pageId: pageId,
+        pageName: pageName,
+        accessToken: pageToken,
+        isPermanent: isPermanent
+      };
+      
+      console.log('Sending page data:', JSON.stringify(pageData));
+      
       const response = await fetch('/api/accounts/add-page', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          accountId: selectedAccountId,
-          page: {
-            id: pageId,
-            name: pageName,
-            access_token: pageToken,
-            isPermanent: isPermanent
-          }
-        }),
+        body: JSON.stringify(pageData),
       });
       
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to add page');
+        console.error('Error response:', responseData);
+        throw new Error(responseData.message || 'Failed to add page');
       }
       
       // Reset form

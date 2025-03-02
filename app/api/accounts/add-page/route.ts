@@ -53,8 +53,23 @@ const savePermanentPagesData = (data: any) => {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
+    console.log('Received page data:', JSON.stringify(data));
     
-    if (!data.pageId || !data.pageName || !data.accessToken || !data.accountId) {
+    // Handle the new data structure from the page-form component
+    const accountId = data.accountId;
+    const pageId = data.page?.id || data.pageId;
+    const pageName = data.page?.name || data.pageName;
+    const accessToken = data.page?.access_token || data.accessToken;
+    const isPermanent = data.page?.isPermanent || data.isPermanent || false;
+    
+    if (!pageId || !pageName || !accessToken || !accountId) {
+      console.error('Missing required fields:', {
+        hasAccountId: !!accountId,
+        hasPageId: !!pageId,
+        hasPageName: !!pageName,
+        hasAccessToken: !!accessToken
+      });
+      
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -65,7 +80,7 @@ export async function POST(request: Request) {
     const { data: account, error: accountError } = await supabase
       .from('accounts')
       .select('*')
-      .eq('id', data.accountId)
+      .eq('id', accountId)
       .single();
     
     if (accountError || !account) {
@@ -80,8 +95,8 @@ export async function POST(request: Request) {
     const { data: existingPage, error: pageError } = await supabase
       .from('pages')
       .select('*')
-      .eq('id', data.pageId)
-      .eq('account_id', data.accountId)
+      .eq('id', pageId)
+      .eq('account_id', accountId)
       .single();
     
     if (existingPage) {
@@ -89,11 +104,11 @@ export async function POST(request: Request) {
       const { error: updateError } = await supabase
         .from('pages')
         .update({
-          name: data.pageName,
-          access_token: data.accessToken
+          name: pageName,
+          access_token: accessToken
         })
-        .eq('id', data.pageId)
-        .eq('account_id', data.accountId);
+        .eq('id', pageId)
+        .eq('account_id', accountId);
       
       if (updateError) {
         console.error('Error updating page:', updateError);
@@ -107,43 +122,43 @@ export async function POST(request: Request) {
       const { error: insertError } = await supabase
         .from('pages')
         .insert({
-          id: data.pageId,
-          name: data.pageName,
-          access_token: data.accessToken,
-          account_id: data.accountId
+          id: pageId,
+          name: pageName,
+          access_token: accessToken,
+          account_id: accountId
         });
       
       if (insertError) {
         console.error('Error inserting page:', insertError);
         return NextResponse.json(
-          { error: 'Failed to add page' },
+          { error: 'Failed to add page', message: insertError.message },
           { status: 500 }
         );
       }
     }
     
     // Handle permanent page if specified
-    if (data.isPermanent) {
+    if (isPermanent) {
       const permanentPagesData = getPermanentPagesData();
       
       // Check if the page is already in the permanent pages list
       const existingPermanentPageIndex = permanentPagesData.pages.findIndex(
-        (page: any) => page.id === data.pageId
+        (page: any) => page.id === pageId
       );
       
       if (existingPermanentPageIndex !== -1) {
         // Update existing permanent page
         permanentPagesData.pages[existingPermanentPageIndex] = {
-          id: data.pageId,
-          name: data.pageName,
-          accountId: data.accountId
+          id: pageId,
+          name: pageName,
+          accountId: accountId
         };
       } else {
         // Add new permanent page
         permanentPagesData.pages.push({
-          id: data.pageId,
-          name: data.pageName,
-          accountId: data.accountId
+          id: pageId,
+          name: pageName,
+          accountId: accountId
         });
       }
       
@@ -155,7 +170,7 @@ export async function POST(request: Request) {
     const { data: updatedAccount, error: updatedAccountError } = await supabase
       .from('accounts')
       .select('*')
-      .eq('id', data.accountId)
+      .eq('id', accountId)
       .single();
     
     if (updatedAccountError) {
@@ -170,7 +185,7 @@ export async function POST(request: Request) {
     const { data: pages, error: pagesError } = await supabase
       .from('pages')
       .select('*')
-      .eq('account_id', data.accountId);
+      .eq('account_id', accountId);
     
     if (pagesError) {
       console.error('Error fetching pages:', pagesError);
@@ -196,9 +211,9 @@ export async function POST(request: Request) {
       success: true,
       account: formattedAccount,
       page: {
-        id: data.pageId,
-        name: data.pageName,
-        access_token: data.accessToken
+        id: pageId,
+        name: pageName,
+        access_token: accessToken
       }
     });
   } catch (error: any) {

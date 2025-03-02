@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
@@ -46,37 +46,44 @@ async function fetchLeadForms(pageId: string, accessToken: string) {
   return data.data;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    // Get query parameters
+    const searchParams = request.nextUrl.searchParams;
     const pageId = searchParams.get('pageId');
-    const accountId = searchParams.get('accountId');
-    
-    if (!pageId) {
+    const accessToken = searchParams.get('accessToken');
+
+    // Validate required parameters
+    if (!pageId || !accessToken) {
       return NextResponse.json(
-        { error: 'Page ID is required' },
+        { error: 'Missing required parameters: pageId and accessToken are required' },
         { status: 400 }
       );
     }
+
+    // Call Facebook Graph API to get lead forms
+    const url = `https://graph.facebook.com/v19.0/${pageId}/leadgen_forms?access_token=${encodeURIComponent(accessToken)}`;
     
-    if (!accountId) {
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: { message: 'Invalid response from Facebook API' } }));
       return NextResponse.json(
-        { error: 'Account ID is required' },
-        { status: 400 }
+        { error: errorData.error?.message || 'Failed to fetch lead forms from Facebook' },
+        { status: response.status }
       );
     }
     
-    // Get page access token
-    const accessToken = getPageAccessToken(accountId, pageId);
+    const data = await response.json();
     
-    // Fetch lead forms
-    const leadForms = await fetchLeadForms(pageId, accessToken);
-    
-    return NextResponse.json({ leadForms });
+    return NextResponse.json({
+      forms: data.data || [],
+      paging: data.paging || null
+    });
   } catch (error: any) {
     console.error('Error fetching lead forms:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch lead forms', message: error.message },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }

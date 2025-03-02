@@ -18,12 +18,6 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 
-interface Page {
-  id: string;
-  name: string;
-  access_token: string;
-}
-
 interface LeadForm {
   id: string;
   name: string;
@@ -37,10 +31,10 @@ interface DateRange {
 }
 
 interface LeadFormSelectorProps {
-  page: Page;
-  accountId: string;
-  useDirectToken?: boolean;
-  initialLeadForms?: any[];
+  forms: LeadForm[];
+  pageId: string;
+  pageName: string;
+  pageToken: string;
 }
 
 // Predefined date ranges
@@ -65,14 +59,14 @@ const MAX_LEADS = 700;
 const leadsCache = new Map<string, any[]>();
 
 export function LeadFormSelector({ 
-  page, 
-  accountId, 
-  useDirectToken = false,
-  initialLeadForms = []
+  forms,
+  pageId,
+  pageName,
+  pageToken
 }: LeadFormSelectorProps) {
-  const [leadForms, setLeadForms] = useState<LeadForm[]>(initialLeadForms);
+  const [leadForms, setLeadForms] = useState<LeadForm[]>(forms || []);
   const [currentFormId, setCurrentFormId] = useState<string>('');
-  const [loading, setLoading] = useState(!initialLeadForms.length);
+  const [loading, setLoading] = useState(false);
   const [loadingLeads, setLoadingLeads] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange>({});
   const [leadData, setLeadData] = useState<any[]>([]);
@@ -97,50 +91,14 @@ export function LeadFormSelector({
   }, []);
 
   useEffect(() => {
-    const fetchLeadForms = async () => {
-      // Skip if not mounted or if we already have initialLeadForms
-      if (!mounted || initialLeadForms.length > 0) {
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        setLoading(true);
-        
-        // For static export, we need to directly call the Facebook Graph API
-        const url = `https://graph.facebook.com/v19.0/${page.id}/leadgen_forms?access_token=${encodeURIComponent(page.access_token)}`;
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error?.message || 'Failed to fetch lead forms');
-        }
-        
-        const data = await response.json();
-        setLeadForms(data.data || []);
-        setCurrentFormId('');
-        setLeadData([]);
-      } catch (error: any) {
-        console.error('Error fetching lead forms:', error);
-        toast.error('Failed to load lead forms: ' + (error.message || 'Unknown error'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Reset state when page changes
-    setCurrentFormId('');
-    setLeadData([]);
-    setCachedLeads([]);
-    setIsCacheLoaded(false);
-    
-    // Fetch lead forms when the component mounts or when the page changes
-    fetchLeadForms();
-    
     // Set default date range (yesterday)
     handlePredefinedRangeChange(PREDEFINED_RANGES.YESTERDAY);
-  }, [page.id, mounted]);
+    
+    // Update lead forms when forms prop changes
+    if (forms && forms.length > 0) {
+      setLeadForms(forms);
+    }
+  }, [forms]);
 
   // Apply predefined date range
   useEffect(() => {
@@ -255,7 +213,7 @@ export function LeadFormSelector({
       setLoadingLeads(true);
       
       // For static export, we need to directly call the Facebook Graph API
-      const url = `https://graph.facebook.com/v19.0/${formId}/leads?access_token=${encodeURIComponent(page.access_token)}&limit=${MAX_LEADS}`;
+      const url = `https://graph.facebook.com/v19.0/${formId}/leads?access_token=${encodeURIComponent(pageToken)}&limit=${MAX_LEADS}`;
       
       const response = await fetch(url);
       
@@ -320,7 +278,7 @@ export function LeadFormSelector({
       }
       
       let allLeadsData: any[] = [];
-      let nextPageUrl: string | null = `https://graph.facebook.com/v19.0/${formId}/leads?access_token=${encodeURIComponent(page.access_token)}&limit=100`;
+      let nextPageUrl: string | null = `https://graph.facebook.com/v19.0/${formId}/leads?access_token=${encodeURIComponent(pageToken)}&limit=100`;
       
       let pageCount = 0;
       let hasMore = false;

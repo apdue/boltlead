@@ -42,171 +42,39 @@ interface DirectPage {
 
 interface DirectTokenFormProps {}
 
-// Load accounts data from accounts.json
-const accountsData = {
-  "accounts": [
-    {
-      "id": "dry-first",
-      "name": "Dry First",
-      "appId": "2495054934033943",
-      "appSecret": "e97ea0a2c6da408f90311e2fe4c877d1",
-      "shortLivedToken": "EAAjdPT8JxhcBOZB1PgnkBUawXaTLE7PykYL1YRPAHJl2OrAhhvZBHZBhsfU2VhxyPMVoKskWYWGQ1VTiB9GBwpVmZARul5Q1h8mXZB7Ow3XIHsc6Ddp02Irkl0l2GbXBZBt9CQSeU61Iwqs7NL03xNhsdpWNckfqGnJSdItct7LG5sww6HdpX9yzC6CjPlayT1pyGDjaHXOqo0nS6qqUgKa8FJAhHno0TUwsgZD",
-      "longLivedToken": "EAAjdPT8JxhcBOZBkICG0VF7hJeQVDxPQDefXZA9gHFLviQEzoM8JyWmB37gsnd5zZC2kH8VlOg7aZBMiX5cB6e4hJ1ltKutna7SqSdgZCZCru7n2KZC5BMA5RLhO8nmwAKFIo2GLAcpNmAmZBuh10YjcY1qsrZAH2ZBSTFEbEu1AydWYZAHVVU5vWWkA9itmKJVtDaS",
-      "longLivedTokenExpiry": "2025-04-27T13:55:11.629Z",
-      "pages": [
-        {
-          "id": "100868156163733",
-          "name": "शिक्षा - Girdhari Sir",
-          "access_token": "EAAjdPT8JxhcBO1UYjTLCeOTdwNh8PiRZA0VBDCyGRseoaOC9mqUmJCVPix3nkyf2hF5H5YcZAmt3RhDK5mPampEu7XBJ8QZCKVKiQwqKDhOU3qjjP4tiVHZC7sPZCvAMGBoNZASuBEtA2ZAermZCQO7rJK7PjmnargHhDVEYnTZAQFkh3YE3E8Q1axL60bKkZAQuFFauQN7wYZD"
-        },
-        {
-          "id": "101245016125462",
-          "name": "आयुर्वेदिक नुस्खे Anamika",
-          "access_token": "EAAjdPT8JxhcBOxlK8jajR7BinECAZCguhqfupr4uPa9fC8eeZBlhq0XGkgyZCK9YkMJAeFYYH7O2SO0ES6ZBgzEiXzVIiSFKZAw7Qxw7SZAuk6gMGRxLwJadjPCsc6y2vPVowOrlps4OE0ooRfw0K1lY6MIxtrlU7UlRYOnryV7fjIommeInMzSb4AS9TaRbDKnn09YuwZD"
-        }
-      ]
-    },
-    {
-      "id": "dry-2",
-      "name": "Dry 2",
-      "appId": "2495054934033943",
-      "appSecret": "e97ea0a2c6da408f90311e2fe4c877d1",
-      "shortLivedToken": "EAAjdPT8JxhcBOwe0AKzUoNOsZBCkjoflZC8fh2QQOgR5M0CWCDC97GULw8hWmV3D0JArVxZB88W3ZBZA629AaAeR36e2UmSCfPIg1gF3CoTZBA58LzoCCbyv8sXqK6DVsyVJsLl0sEuG3fVuP56P7BxLPXzhNchWkwUbk5j9KgNZCpS1bcWLPztwxeNPZBojxaQi4CBCZAZB23GKrVTmeeiO61io0JNZBKLLmmYF6YZD",
-      "longLivedToken": "EAAjdPT8JxhcBO7LPDliBklfjHRMuY6K0iYqhWY5ni95eupUJYuMj24MZAGflK5eFdKzOcUUPspzn1phqNJZBCXEHZANA145aewVZB8xzmSN03YsFixcuSfSePn7rqZCO0Ylt57UfiN0A5xuyDx11iETIOGyTpEVelYO6qGnUNxZBLR5ggEVAdmmiY6a7TErrp2",
-      "longLivedTokenExpiry": "2025-04-27T14:28:45.581Z",
-      "pages": [
-        {
-          "id": "100868156163733",
-          "name": "शिक्षा - Girdhari Sir",
-          "access_token": "EAAjdPT8JxhcBO1yE7qsf0Ba7mp0g4KqwAXDG64mEKW6eZB05rfzWYIfYPFJPF5Nbf09ZCSlLQH0kjIVD5nWmAstbiepx3tS92FlHbZAZAGwdY0zZCK6COXQ4BdkjnTtRgRprjywaqjPwGg5IZAF0Vzd40vZBqBWn7YZBTPRchFVOhefapBIKng7B8hLHZCIvq3XnEjkUyDYoZD"
-        },
-        {
-          "id": "101245016125462",
-          "name": "आयुर्वेदिक नुस्खे Anamika",
-          "access_token": "EAAjdPT8JxhcBO31zLgFVJZCPHlPddkoULpRZCuoPBCo6LWnuxZA1xw2NrTsor2nZChq62a5AENdoRx3pnS4XOuH7KKerb26IFkLLZCNIwAgPDzb1TAiGUefZCBUZCaTZBi6j7HEvvehMGZAhCTok3OzGIZAfLZAs3rQyZCP0ZBNxSFF192O8f85pZBH084lO1J0bKCb95vP1EX0KUZD"
-        }
-      ]
-    },
-    {
-      "id": "aachar",
-      "name": "Aachar",
-      "appId": "1049094106958878",
-      "appSecret": "da3443b0a4afd13b1a6fdd685ed0e1a6",
-      "shortLivedToken": "EAAO6JUGUzB4BO7grq7Kq4rZCvWXZAV9jLurzQIQgipnCNnWuTRytb8Sv1bS1qygH0vkau2GyuhgEzroXcBZAQXTwQElrGj723yoWdjtl7HFCEE2XlG62w9nQXiKZAGwBQDN72eQbwW6xZBnrqG0JH624mbpeZBfrvZCy4FmbY2cPFd4ZC6s57AruOuDDjoKueD032Audqvzq7TR9y3hZClzI9DJdm7y4hueRyg3qVgrS6EQDAvn5DxmQZD",
-      "longLivedToken": "EAAO6JUGUzB4BOx87Pf9F8GpI1t8AviKLrFZBWTCM9xtXg0hTfZArtNoAFfOqrg4L1uYpVKZAcDg0g6JrpnZAU6AloqLiwd5waDnhIqLyePc5Y5ZAbeV6MKFE0wchnt341tXblJ0VHnSA8JXfiTmSUfs3RZAg3iw92NqUAe1APiOJ8nqwDyaSppIcvPohMIS0bznwUuxHEnCxyya3KY",
-      "longLivedTokenExpiry": "2027-02-26T22:00:00.000Z",
-      "pages": [
-        {
-          "id": "448065431730618",
-          "name": "राजस्थान का Oraras Ghee",
-          "access_token": "EAAO6JUGUzB4BO9uhViMHRlZCwP1gOmCu07Tb69KFWMZAaTsKBP2gEjMO5C00qaGQUbsuPdYV7VJRGzAXerSfyKZCZBsraLaNIsNZBbpuRfs3VtxviytvZBfRJZA1bB0g0oTGLeZCLt7Kq34GIUNZBM7O9EOqvZCUfZBE2bdRnvmEgXvMEareWdyZBtALeOyqNWSE0WKRktTim48wa8BxjKRQFSlbZArOf"
-        },
-        {
-          "id": "425413393995495",
-          "name": "राजस्थान का रेगिस्तानी अचार",
-          "access_token": "EAAO6JUGUzB4BO0WpY7cQpMd1UNqAa24PYQpUn7SqjY9BqWZAo2w72f1JmD7DFA7J6bQZARnQTAARR1KvJbiYWbfIk0uauM4yND0XnSJ2tE3aPERDhBGlrSsMSMiEgKv0x1U1wheKBjZCu5h0R7LNLvW5tvTVIJPtnOXG53ARPzS9UT6w5ama63bSKwBM0s5ku2dGz1g3WN4JNZAhCcJbYScd"
-        },
-        {
-          "id": "100517029593466",
-          "name": "Child Education Group",
-          "access_token": "EAAO6JUGUzB4BO9VqBvwCb2aYzTH1mn0icdgZB4ZBMvWpapENYBYgtsY9CW6qTFXN4oKVr19SmFzalW4ewf7lAB6GAnSbkLPDVaG8zon4xnW5SjTE3ZAxF1pzDamZC0NnAbGGBH6XYZCdMIZCrOP9HGcRg5vm9ON6w94h1qa4iQCSHFC59j3W7TzFEZAwzUZBRSAmuo1Aen8ARuYJF3XtvzP9ZAu0ZD"
-        },
-        {
-          "id": "104845322452731",
-          "name": "Motivation Nature",
-          "access_token": "EAAO6JUGUzB4BOxGZBmuCwkUIKwzXgHEULk1Ic3veWlaJ6nEH8Ts9SGeoP2Brni3tnP8DLUwtetumZBI2H24HbcuZCeZAsZAZCiUJC3GRqgurY16unraIfaKjkduhkKW2SU60xyt5HwlBVi6abq5ZAZAYsdJWsB33vZAzZBUlf3mhB1nBUvz35TtpryoOEYYwVVgBdeWcboWFJO4jEP45fx4Ti3bpMZD"
-        }
-      ]
-    },
-    {
-      "id": "shilajit-talib",
-      "name": "Shilajit Talib",
-      "appId": "1168919248103037",
-      "appSecret": "34634a2964a4bd5cff0fe8cdfcd0e138",
-      "shortLivedToken": "EAAQnIDiN5n0BO6q3oha3ZBwCZB8TUW5C1spEhctGdGkqdduCHooHlhFHoFlHiKZCwxzGwIZCcWvX0ZBBngnu2EUMF9rvwsLrlKmuqR6reqWbG8haHmIUDe6mZBim60SDEfYffMayPYgSLXOviLZB8LfLYTWNPHfRZCJ8YsVU9r1Skm9n83rgZBQbqg1pnnf2odyUqwAKfhj7jdMgwaqQhf5glUthogsgZD",
-      "longLivedToken": "EAAQnIDiN5n0BOztytQtR3irQC1Mjy74v3swZBFqIpZBdRTzS0qkHFqNgBVF6lQHkkq1HnZCj0F9dmMruGVSdX5d9A8a44BuZCVT9MAZCMEjqozRNczsvi2yofH9Moncni0dHpdugkjZBmjLtwX1UqsXtVsFSftZBXbUHGwlRz8UnkDwaaTLE3nPIjQ5",
-      "longLivedTokenExpiry": "2025-04-28T18:00:00.000Z",
-      "pages": [
-        {
-          "id": "101921009426692",
-          "name": "Ghar Par Banaye",
-          "access_token": "EAAQnIDiN5n0BO8XtXhVHduuij5wIPKOFlNZB7zW7yZAzQyhfzVrq7eUtcfRyRUf5Timlm9zE7cC1wueweGaJjbQFjhAOWfWBDyJGgtJZARCelR9wKYwTxSphaZC5W5b4pKV08WGVKSjcidn4xUelZBGqk1gWIF63EXYP7iZAStciR1c6POP5BzTrg76h0lbd0ZD"
-        },
-        {
-          "id": "102048072617856",
-          "name": "क्रिकेट Funda",
-          "access_token": "EAAQnIDiN5n0BOZCSpWguPTyn648vA0B9pyVHYaZBFYNLttvmkvLGPM2KYRDn6o9jCx9pLEFHJ24Fm5LlnzyD6wIrQ0F3eFRR5xGuNT1t1JMreZBTIjsLe4Ivir2cZBd4WuYZAqdyNGslbnmtU0ZBi3uWm8uD1OLnjFU2kvdNKMKKLd6mrh6Vjl2Yar1taPTFkZD"
-        },
-        {
-          "id": "104440862378199",
-          "name": "Hindi Facts",
-          "access_token": "EAAQnIDiN5n0BO7OSZBelTEz8ZCWCShJJh9sDWZAnBVW1N9fKRqUQBz9aTzpRdlYDZCByAA63oizoAOAX5yAp0AajzdpG5LHEmgdZBe6ZCCi53ZA7zYyimc1hvJznZAQqmphGcc5PZBOkwVLEwPJlLEQGvtzp77b07ic9Telv78olrTRHorgMc2mWxmrZBGZBJR8i8IZD"
-        }
-      ]
-    },
-    {
-      "id": "shilajit-bamandev",
-      "name": "Shilajit Bamandev",
-      "appId": "1191371495943232",
-      "appSecret": "3a66aa9bf00988cde15b3f9c874e8665",
-      "shortLivedToken": "EAAQ7i8rPrEABOxzjgJ5jbN09LVDgslocyt0lNSEZBoKMAemOZBsaEoKksK4ZCnncobpAFib0snOlDnubvA1ZBsykNtQU3l5KNGoJRgCbK0GRA2MBfL1BfSFk1sZB7rvHMtU9NyKEiUTboihaNrKe0AQl2VEYS4ETa4c1iAGxzircZAz7F31e5cu5kN5ZBspMMS6RutAikxo25YvZCftCfCcQEdvaB9b8vkxbGcQZD",
-      "longLivedToken": "EAAQ7i8rPrEABOyYXV37a0obICDZA8isbkgLmayD2CFot1ToVRvGQn97kmJSSDxZCUM97KnYR6smOV1YaXfo39ytDsFrZAwMZB4cTFdBR9onUGMxLdRcGNHHoPFu6HjsymhYwIqBTMGjCo95ocRgoXqNdtjAVBauHOyNZAgelcZAkZAYO6yhxRy7gi1kYCqzRZCz9",
-      "longLivedTokenExpiry": "2025-04-29T18:00:00.000Z",
-      "pages": [
-        {
-          "id": "112830371771251",
-          "name": "Motivational Baba",
-          "access_token": "EAAQ7i8rPrEABO0UjC0lWjXfFHiAybzQStSkjBb2kH7JAYhNY6O9srUWG91PEeZC2Wvrd2xgK3PZBWt8AqtoHPLWDIZCpBAPZCyqcsA1utllaMVDkwfTsVz6KNrEERXNkBD1ZBzPF7Beb7tnymLs3Dcxwo14d4JwmX8XIYARA2AsrAEpfKJWtjDVgjzt9ZBX5YszTcnxPIZD"
-        }
-      ]
-    },
-    {
-      "id": "only-siljait",
-      "name": "Only Siljait",
-      "appId": "1297950911500089",
-      "appSecret": "93fb73a4a7d2c7d27a543e0d90de6ef9",
-      "shortLivedToken": "EAAScer8EDzkBO4RD310A5TBZBhIT2rPH2CZBcULf364m7cFZCR6bIqDJ9PVSiMOpXfpdCQJQRBwurZB9K6CK9LgGgWLb9JEARaEd2JVsARskZBWTDSNi8GgZATaoZAUt2Vy5IfS8FZCuVrZBk3r6SZCvSKMsOXSEPj7LmEAxnRv17CZB4W5ZChTmlZCThwoZB0KBawxayj9F4ZD",
-      "longLivedToken": "EAAScer8EDzkBO3FglJp0EnIdONS2R9GblnmflCW10yoS6WT0sMCyjHs4iLGVmOFdXTRBnZByRUawD6CPu0HdVZBZBRZBrSuRCrrT7VDXkS5TRPlz07f6rtq4AUMpnDg9aV9ZAMvl2djh1GaUcwhwZCKHOWpeLkPC8QCn9OaZC9JWOSXRNulQm9zwM8q",
-      "longLivedTokenExpiry": "2025-04-29T18:00:00.000Z",
-      "pages": [
-        {
-          "id": "109758898675072",
-          "name": "Unic Fact",
-          "access_token": "EAAScer8EDzkBOZCTsNuyLvRbkvPqJoi7lC33Cb9alShFRskDSjNF5ike2droM78cNGF8TMiYKZCM0MhhcXqigd1PbBC9B0rrLTSeHNy0WJZC8QUx5FYZBn6nRauH6yOubBpZAeQvus5aLjOHmMeYZCa3XrsujOcflzWUarz3jXmBmtgIMXmsmd5t85XVcRNcsZD"
-        }
-      ]
+// Process accounts data to create a list of pages with account info
+const processAccountsData = (accounts: any[]) => {
+  const allPages: DirectPage[] = [];
+  accounts.forEach(account => {
+    if (account.pages && Array.isArray(account.pages)) {
+      account.pages.forEach((page: any) => {
+        // For pages with duplicate IDs across accounts, make the ID unique
+        const isDuplicate = allPages.some(p => p.id === page.id && p.accountName !== account.name);
+        const pageId = isDuplicate ? `${page.id}-${account.id}` : page.id;
+        
+        allPages.push({
+          id: pageId,
+          name: page.name,
+          access_token: page.access_token,
+          accountName: account.name
+        });
+      });
     }
-  ],
-  "currentAccountId": "only-siljait",
-  "lastUpdated": "2024-02-29T18:45:00.000Z"
+  });
+  return allPages;
 };
 
-// Process accounts data to create a list of pages with account info
-const allPages: DirectPage[] = [];
-accountsData.accounts.forEach(account => {
-  account.pages.forEach(page => {
-    // For pages with duplicate IDs across accounts, make the ID unique
-    const isDuplicate = allPages.some(p => p.id === page.id && p.accountName !== account.name);
-    const pageId = isDuplicate ? `${page.id}-${account.id}` : page.id;
-    
-    allPages.push({
-      id: pageId,
-      name: page.name,
-      access_token: page.access_token,
-      accountName: account.name
-    });
-  });
-});
-
 // Group pages by account
-const accountGroups = allPages.reduce((groups, page) => {
-  const accountName = page.accountName || 'Other';
-  if (!groups[accountName]) {
-    groups[accountName] = [];
-  }
-  groups[accountName].push(page);
-  return groups;
-}, {} as Record<string, DirectPage[]>);
+const groupPagesByAccount = (pages: DirectPage[]) => {
+  return pages.reduce((groups, page) => {
+    const accountName = page.accountName || 'Other';
+    if (!groups[accountName]) {
+      groups[accountName] = [];
+    }
+    groups[accountName].push(page);
+    return groups;
+  }, {} as Record<string, DirectPage[]>);
+};
 
 export function DirectTokenForm({}: DirectTokenFormProps) {
   const [savedPages, setSavedPages] = useState<DirectPage[]>([]);
@@ -219,8 +87,49 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
   const [leadForms, setLeadForms] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('accounts');
-  const [selectedAccount, setSelectedAccount] = useState<string>('Only Siljait'); // Default to Only Siljait account
+  const [selectedAccount, setSelectedAccount] = useState<string>('');
   const [mounted, setMounted] = useState(false);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [allPages, setAllPages] = useState<DirectPage[]>([]);
+  const [accountGroups, setAccountGroups] = useState<Record<string, DirectPage[]>>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load accounts from API
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/accounts');
+        if (!response.ok) {
+          throw new Error('Failed to fetch accounts');
+        }
+        
+        const data = await response.json();
+        setAccounts(data.accounts || []);
+        
+        // Process accounts data
+        const pages = processAccountsData(data.accounts || []);
+        setAllPages(pages);
+        
+        // Group pages by account
+        const groups = groupPagesByAccount(pages);
+        setAccountGroups(groups);
+        
+        // Set default selected account if available
+        if (Object.keys(groups).length > 0) {
+          setSelectedAccount(Object.keys(groups)[0]);
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching accounts:', error);
+        toast.error('Failed to load accounts');
+        setIsLoading(false);
+      }
+    };
+    
+    fetchAccounts();
+  }, []);
 
   // Load saved pages from localStorage on component mount
   useEffect(() => {
@@ -245,121 +154,42 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
     }
   }, [savedPages, mounted]);
 
-  const handleConnect = async () => {
-    if (!mounted) return;
+  const handleAccountChange = (value: string) => {
+    setSelectedAccount(value);
+    setSelectedPageId('');
+    setPageId('');
+    setPageName('');
+    setPageToken('');
+  };
 
-    let currentPageId = '';
-    let currentPageToken = '';
-    let currentPageName = '';
-
-    if (selectedPageId) {
-      // Use selected page from dropdown
-      let selectedPage;
-      
-      if (activeTab === 'accounts') {
-        selectedPage = allPages.find(page => page.id === selectedPageId);
-      } else {
-        selectedPage = savedPages.find(page => page.id === selectedPageId);
-      }
-      
-      if (!selectedPage) {
-        toast.error('Selected page not found');
-        return;
-      }
-      
-      // If the ID contains a hyphen (for duplicate IDs), extract the original ID
-      const originalId = selectedPageId.includes('-') 
-        ? selectedPageId.split('-')[0] 
-        : selectedPageId;
-      
-      currentPageId = originalId;
-      currentPageToken = selectedPage.access_token;
-      currentPageName = selectedPage.name;
-    } else {
-      // Use manually entered details
-      if (!pageId.trim()) {
-        toast.error('Please enter a Page ID');
-        return;
-      }
-
-      if (!pageToken.trim()) {
-        toast.error('Please enter a Page Access Token');
-        return;
-      }
-
-      if (!pageName.trim()) {
-        toast.error('Please enter a Page Name');
-        return;
-      }
-
-      currentPageId = pageId;
-      currentPageToken = pageToken;
-      currentPageName = pageName;
-    }
-
-    try {
-      setLoading(true);
-      
-      // For static export, we need to directly call the Facebook Graph API
-      const url = `https://graph.facebook.com/v19.0/${currentPageId}/leadgen_forms?access_token=${encodeURIComponent(currentPageToken)}`;
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: { message: 'Invalid response from Facebook API' } }));
-        throw new Error(
-          errorData.error?.message || 
-          'Failed to connect with provided token'
-        );
-      }
-      
-      const data = await response.json();
-      setLeadForms(data.data || []);
-      setConnected(true);
-      
-      // Save page to localStorage if it's not already saved
-      if (!savedPages.some(page => page.id === currentPageId)) {
-        const newPage = {
-          id: currentPageId,
-          name: currentPageName,
-          access_token: currentPageToken
-        };
-        setSavedPages(prev => [...prev, newPage]);
-      }
-      
-      toast.success('Successfully connected to Facebook page');
-    } catch (error: any) {
-      console.error('Error connecting to Facebook:', error);
-      toast.error(error.message || 'Failed to connect to Facebook');
-      setConnected(false);
-    } finally {
-      setLoading(false);
+  const handlePageSelect = (value: string) => {
+    setSelectedPageId(value);
+    const selectedPage = allPages.find(p => p.id === value);
+    if (selectedPage) {
+      setPageId(value.includes('-') ? value.split('-')[0] : value);
+      setPageName(selectedPage.name);
+      setPageToken(selectedPage.access_token);
     }
   };
 
-  const handleAddNewPage = () => {
-    setSelectedPageId('');
-    setDialogOpen(true);
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Reset form when switching tabs
+    if (value === 'manual') {
+      setPageId('');
+      setPageName('');
+      setPageToken('');
+    }
   };
 
   const handleSavePage = () => {
-    if (!pageId.trim()) {
-      toast.error('Please enter a Page ID');
+    if (!pageId || !pageName || !pageToken) {
+      toast.error('Please fill in all fields');
       return;
     }
 
-    if (!pageToken.trim()) {
-      toast.error('Please enter a Page Access Token');
-      return;
-    }
-
-    if (!pageName.trim()) {
-      toast.error('Please enter a Page Name');
-      return;
-    }
-
-    // Check if page already exists
-    const existingPageIndex = savedPages.findIndex(page => page.id === pageId);
+    // Check if page already exists in saved pages
+    const existingPageIndex = savedPages.findIndex(p => p.id === pageId);
     
     if (existingPageIndex !== -1) {
       // Update existing page
@@ -367,57 +197,72 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
       updatedPages[existingPageIndex] = {
         id: pageId,
         name: pageName,
-        access_token: pageToken
+        access_token: pageToken,
+        accountName: selectedAccount || 'Manual Entry'
       };
       setSavedPages(updatedPages);
-      toast.success('Page details updated');
+      toast.success('Page updated successfully');
     } else {
       // Add new page
-      setSavedPages([...savedPages, {
-        id: pageId,
-        name: pageName,
-        access_token: pageToken
-      }]);
-      toast.success('Page added successfully');
+      setSavedPages([
+        ...savedPages,
+        {
+          id: pageId,
+          name: pageName,
+          access_token: pageToken,
+          accountName: selectedAccount || 'Manual Entry'
+        }
+      ]);
+      toast.success('Page saved successfully');
     }
-    
-    // Clear form and close dialog
+
+    // Reset form
     setPageId('');
     setPageName('');
     setPageToken('');
-    setDialogOpen(false);
   };
 
   const handleDeletePage = (id: string) => {
-    const updatedPages = savedPages.filter(page => page.id !== id);
-    setSavedPages(updatedPages);
-    
-    // If the deleted page was selected, reset selection
-    if (selectedPageId === id) {
-      setSelectedPageId('');
-      setConnected(false);
+    setSavedPages(savedPages.filter(p => p.id !== id));
+    toast.success('Page removed from saved list');
+  };
+
+  const handleConnect = async () => {
+    if (!selectedPageId && !pageId) {
+      toast.error('Please select or enter a page');
+      return;
     }
-    
-    // Update localStorage
-    localStorage.setItem('directPages', JSON.stringify(updatedPages));
-    toast.success('Page removed');
-  };
 
-  const handlePageSelect = (id: string) => {
-    setSelectedPageId(id);
-    setConnected(false);
-  };
+    setLoading(true);
+    try {
+      // Use the selected page token or manually entered token
+      const token = selectedPageId ? 
+        allPages.find(p => p.id === selectedPageId)?.access_token : 
+        pageToken;
+      
+      const id = selectedPageId || pageId;
+      
+      if (!token) {
+        throw new Error('No access token found');
+      }
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setSelectedPageId('');
-    setConnected(false);
-  };
-
-  const handleAccountChange = (accountName: string) => {
-    setSelectedAccount(accountName);
-    setSelectedPageId('');
-    setConnected(false);
+      // Fetch lead forms for the page
+      const response = await fetch(`/api/lead-forms?pageId=${id}&accessToken=${token}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch lead forms');
+      }
+      
+      const data = await response.json();
+      setLeadForms(data.forms || []);
+      setConnected(true);
+      toast.success('Connected successfully');
+    } catch (error) {
+      console.error('Error connecting to page:', error);
+      toast.error('Failed to connect to page');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -436,113 +281,145 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
             </TabsList>
             
             <TabsContent value="accounts" className="mt-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="accountSelect">Select Account</Label>
-                  <Select 
-                    value={selectedAccount} 
-                    onValueChange={handleAccountChange}
-                  >
-                    <SelectTrigger id="accountSelect">
-                      <SelectValue placeholder="Select an account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(accountGroups).map((accountName) => (
-                        <SelectItem key={accountName} value={accountName}>
-                          {accountName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="accountPage">Select a Page from {selectedAccount}</Label>
-                  <Select 
-                    value={selectedPageId} 
-                    onValueChange={handlePageSelect}
-                  >
-                    <SelectTrigger id="accountPage">
-                      <SelectValue placeholder="Select a page" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accountGroups[selectedAccount]?.map((page) => (
-                        <SelectItem key={page.id} value={page.id}>
-                          {page.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {selectedPageId && (
-                  <div className="p-4 border rounded-md bg-muted/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Facebook className="h-5 w-5 text-blue-600" />
-                      <h3 className="font-medium">
-                        {allPages.find(p => p.id === selectedPageId)?.name}
-                      </h3>
-                      <Badge variant="outline" className="ml-auto">
-                        {allPages.find(p => p.id === selectedPageId)?.accountName}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Page ID: {selectedPageId.includes('-') ? selectedPageId.split('-')[0] : selectedPageId}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Token is ready to use
-                    </p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="saved" className="mt-4">
-              {savedPages.length > 0 ? (
-                <div className="space-y-2">
-                  <Label htmlFor="savedPage">Saved Pages</Label>
-                  <div className="flex gap-2">
+              ) : Object.keys(accountGroups).length > 0 ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="accountSelect">Select Account</Label>
                     <Select 
-                      value={selectedPageId} 
-                      onValueChange={handlePageSelect}
+                      value={selectedAccount} 
+                      onValueChange={handleAccountChange}
                     >
-                      <SelectTrigger id="savedPage" className="flex-1">
-                        <SelectValue placeholder="Select a saved page" />
+                      <SelectTrigger id="accountSelect">
+                        <SelectValue placeholder="Select an account" />
                       </SelectTrigger>
                       <SelectContent>
-                        {savedPages.map((page) => (
-                          <SelectItem key={page.id} value={page.id}>
-                            {page.name}
+                        {Object.keys(accountGroups).map((accountName) => (
+                          <SelectItem key={accountName} value={accountName}>
+                            {accountName}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    
-                    <Button onClick={handleAddNewPage} variant="outline">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add New
-                    </Button>
                   </div>
                   
-                  {selectedPageId && (
-                    <div className="flex justify-end mt-2">
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
-                        onClick={() => handleDeletePage(selectedPageId)}
+                  {selectedAccount && accountGroups[selectedAccount] && (
+                    <div className="space-y-2">
+                      <Label htmlFor="pageSelect">Select Page</Label>
+                      <Select 
+                        value={selectedPageId} 
+                        onValueChange={handlePageSelect}
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Remove Page
-                      </Button>
+                        <SelectTrigger id="pageSelect">
+                          <SelectValue placeholder="Select a page" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {accountGroups[selectedAccount].map((page) => (
+                            <SelectItem key={page.id} value={page.id}>
+                              {page.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  
+                  {selectedPageId && (
+                    <div className="p-4 border rounded-md bg-muted/30">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Facebook className="h-5 w-5 text-blue-600" />
+                        <h3 className="font-medium">
+                          {allPages.find(p => p.id === selectedPageId)?.name}
+                        </h3>
+                        <Badge variant="outline" className="ml-auto">
+                          {allPages.find(p => p.id === selectedPageId)?.accountName}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Page ID: {selectedPageId.includes('-') ? selectedPageId.split('-')[0] : selectedPageId}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Token is ready to use
+                      </p>
                     </div>
                   )}
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-muted-foreground mb-4">No saved pages found</p>
-                  <Button onClick={handleAddNewPage} variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add New Page
+                  <p className="text-muted-foreground mb-4">No accounts found</p>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="saved" className="mt-4">
+              {savedPages.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="savedPageSelect">Select Saved Page</Label>
+                    <Select 
+                      value={selectedPageId} 
+                      onValueChange={handlePageSelect}
+                    >
+                      <SelectTrigger id="savedPageSelect">
+                        <SelectValue placeholder="Select a saved page" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {savedPages.map((page) => (
+                          <SelectItem key={page.id} value={page.id}>
+                            {page.name} {page.accountName ? `(${page.accountName})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {selectedPageId && (
+                    <div className="p-4 border rounded-md bg-muted/30">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Facebook className="h-5 w-5 text-blue-600" />
+                        <h3 className="font-medium">
+                          {savedPages.find(p => p.id === selectedPageId)?.name}
+                        </h3>
+                        {savedPages.find(p => p.id === selectedPageId)?.accountName && (
+                          <Badge variant="outline" className="ml-auto">
+                            {savedPages.find(p => p.id === selectedPageId)?.accountName}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Page ID: {selectedPageId}
+                      </p>
+                      <div className="flex justify-end mt-2">
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => handleDeletePage(selectedPageId)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">No saved pages yet</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setActiveTab('accounts')}
+                  >
+                    Select from accounts
+                  </Button>
+                  <span className="mx-2 text-muted-foreground">or</span>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setActiveTab('manual')}
+                  >
+                    Add manually
                   </Button>
                 </div>
               )}
@@ -551,131 +428,121 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
             <TabsContent value="manual" className="mt-4">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="pageName">Page Name</Label>
-                  <Input
-                    id="pageName"
-                    placeholder="Enter a name for this page"
-                    value={pageName}
-                    onChange={(e) => setPageName(e.target.value)}
+                  <Label htmlFor="pageId">Page ID</Label>
+                  <Input 
+                    id="pageId" 
+                    placeholder="Enter Facebook Page ID" 
+                    value={pageId}
+                    onChange={(e) => setPageId(e.target.value)}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="pageId">Facebook Page ID</Label>
-                  <Input
-                    id="pageId"
-                    placeholder="Enter your Page ID"
-                    value={pageId}
-                    onChange={(e) => setPageId(e.target.value)}
+                  <Label htmlFor="pageName">Page Name</Label>
+                  <Input 
+                    id="pageName" 
+                    placeholder="Enter Page Name" 
+                    value={pageName}
+                    onChange={(e) => setPageName(e.target.value)}
                   />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="pageToken">Page Access Token</Label>
-                  <Input
-                    id="pageToken"
-                    placeholder="Enter your Page Access Token"
+                  <Input 
+                    id="pageToken" 
+                    placeholder="Enter Page Access Token" 
                     value={pageToken}
                     onChange={(e) => setPageToken(e.target.value)}
-                    type="password"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Your token is stored locally and never sent to our servers
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-          
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Facebook Page</DialogTitle>
-                <DialogDescription>
-                  Enter your Facebook Page details to save for future use
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dialogPageName">Page Name</Label>
-                  <Input
-                    id="dialogPageName"
-                    placeholder="Enter a name for this page"
-                    value={pageName}
-                    onChange={(e) => setPageName(e.target.value)}
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="dialogPageId">Facebook Page ID</Label>
-                  <Input
-                    id="dialogPageId"
-                    placeholder="Enter your Page ID"
-                    value={pageId}
-                    onChange={(e) => setPageId(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="dialogPageToken">Page Access Token</Label>
-                  <Input
-                    id="dialogPageToken"
-                    placeholder="Enter your Page Access Token"
-                    value={pageToken}
-                    onChange={(e) => setPageToken(e.target.value)}
-                    type="password"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Your token is stored locally and never sent to our servers
-                  </p>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSavePage}>
+                <Button 
+                  onClick={handleSavePage}
+                  disabled={!pageId || !pageName || !pageToken}
+                  className="w-full"
+                >
                   <Save className="h-4 w-4 mr-2" />
                   Save Page
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex justify-between">
           <Button 
-            onClick={handleConnect} 
-            disabled={loading || (activeTab !== 'manual' && !selectedPageId)}
-            className="w-full"
+            variant="outline" 
+            onClick={() => setDialogOpen(true)}
+            disabled={!selectedPageId && !pageId}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Lead Form
+          </Button>
+          
+          <Button 
+            onClick={handleConnect}
+            disabled={(!selectedPageId && !pageId) || loading}
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Connecting...
               </>
             ) : (
-              'Connect'
+              <>Connect</>
             )}
           </Button>
         </CardFooter>
       </Card>
       
-      {connected && selectedPageId && (
-        <DirectLeadFormSelector 
-          pageId={selectedPageId.includes('-') ? selectedPageId.split('-')[0] : selectedPageId} 
-          pageToken={
-            activeTab === 'accounts' 
-              ? allPages.find(page => page.id === selectedPageId)?.access_token || ''
-              : savedPages.find(page => page.id === selectedPageId)?.access_token || ''
-          }
-          pageName={
-            activeTab === 'accounts'
-              ? allPages.find(page => page.id === selectedPageId)?.name || ''
-              : savedPages.find(page => page.id === selectedPageId)?.name || ''
-          }
-          leadForms={leadForms}
-        />
+      {connected && leadForms.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Lead Forms</CardTitle>
+            <CardDescription>
+              Select a lead form to use
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LeadFormSelector 
+              forms={leadForms} 
+              pageId={selectedPageId || pageId} 
+              pageName={
+                selectedPageId 
+                  ? (allPages.find(p => p.id === selectedPageId)?.name || savedPages.find(p => p.id === selectedPageId)?.name || '') 
+                  : pageName
+              }
+              pageToken={
+                selectedPageId 
+                  ? (allPages.find(p => p.id === selectedPageId)?.access_token || savedPages.find(p => p.id === selectedPageId)?.access_token || '') 
+                  : pageToken
+              }
+            />
+          </CardContent>
+        </Card>
       )}
+      
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Lead Form</DialogTitle>
+            <DialogDescription>
+              To add a lead form, you need to connect to the page first.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Please follow these steps:</p>
+            <ol className="list-decimal list-inside space-y-2 mt-2">
+              <li>Select a page from your accounts or enter page details manually</li>
+              <li>Click the "Connect" button to fetch available lead forms</li>
+              <li>Select a lead form from the list that appears</li>
+            </ol>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -688,18 +555,12 @@ interface DirectLeadFormSelectorProps {
 }
 
 function DirectLeadFormSelector({ pageId, pageToken, pageName, leadForms }: DirectLeadFormSelectorProps) {
-  const page = {
-    id: pageId,
-    name: pageName,
-    access_token: pageToken
-  };
-  
   return (
     <LeadFormSelector 
-      page={page} 
-      accountId="direct" 
-      useDirectToken={true}
-      initialLeadForms={leadForms}
+      forms={leadForms}
+      pageId={pageId}
+      pageName={pageName}
+      pageToken={pageToken}
     />
   );
 }
