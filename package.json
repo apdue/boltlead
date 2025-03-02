@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate-to-supabase": "node scripts/migrate-to-supabase.js"
+    "migrate-to-supabase": "node scripts/migrate-to-supabase.js",
+    "update-schema": "node scripts/update-pages-schema.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -53,6 +54,7 @@
     "clsx": "^2.1.0",
     "cmdk": "^0.2.1",
     "date-fns": "^3.3.1",
+    "dotenv": "^16.4.7",
     "embla-carousel-react": "^8.0.0",
     "eslint": "8.49.0",
     "eslint-config-next": "13.5.1",

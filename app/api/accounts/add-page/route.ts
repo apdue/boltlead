@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 // For permanent pages, we'll keep using the JSON file for now
 // This could be migrated to Supabase in a future update
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
     const { data: existingPage, error: pageError } = await supabase
       .from('pages')
       .select('*')
-      .eq('id', pageId)
+      .eq('fb_page_id', pageId)
       .eq('account_id', accountId)
       .single();
     
@@ -107,8 +108,7 @@ export async function POST(request: Request) {
           name: pageName,
           access_token: accessToken
         })
-        .eq('id', pageId)
-        .eq('account_id', accountId);
+        .eq('id', existingPage.id);
       
       if (updateError) {
         console.error('Error updating page:', updateError);
@@ -118,11 +118,15 @@ export async function POST(request: Request) {
         );
       }
     } else {
-      // Insert a new page
+      // Generate a unique ID for the page entry
+      const uniqueId = uuidv4();
+      
+      // Insert a new page with a generated unique ID
       const { error: insertError } = await supabase
         .from('pages')
         .insert({
-          id: pageId,
+          id: uniqueId,
+          fb_page_id: pageId,
           name: pageName,
           access_token: accessToken,
           account_id: accountId
@@ -204,7 +208,11 @@ export async function POST(request: Request) {
       shortLivedToken: updatedAccount.short_lived_token,
       longLivedToken: updatedAccount.long_lived_token,
       longLivedTokenExpiry: updatedAccount.long_lived_token_expiry,
-      pages: pages || []
+      pages: pages ? pages.map((page: any) => ({
+        id: page.fb_page_id,
+        name: page.name,
+        access_token: page.access_token
+      })) : []
     };
     
     return NextResponse.json({
