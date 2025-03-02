@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, Plus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 
 interface Account {
   id: string;
@@ -26,7 +25,6 @@ export function PageForm({ accountId, onPageAdded, accounts }: PageFormProps) {
   const [pageName, setPageName] = useState('');
   const [pageId, setPageId] = useState('');
   const [pageToken, setPageToken] = useState('');
-  const [isPermanent, setIsPermanent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,7 +59,7 @@ export function PageForm({ accountId, onPageAdded, accounts }: PageFormProps) {
         pageId: pageId,
         pageName: pageName,
         accessToken: pageToken,
-        isPermanent: isPermanent
+        isPermanent: false
       };
       
       console.log('Sending page data:', JSON.stringify(pageData));
@@ -85,12 +83,11 @@ export function PageForm({ accountId, onPageAdded, accounts }: PageFormProps) {
       setPageName('');
       setPageId('');
       setPageToken('');
-      setIsPermanent(false);
       
       // Notify parent component
       onPageAdded();
       
-      toast.success(isPermanent ? 'Page added permanently!' : 'Page added successfully!');
+      toast.success('Page added successfully!');
     } catch (error: any) {
       console.error('Error adding page:', error);
       toast.error(error.message || 'Failed to add page');
@@ -158,17 +155,6 @@ export function PageForm({ accountId, onPageAdded, accounts }: PageFormProps) {
             <p className="text-xs text-muted-foreground">
               Get this from the Facebook Graph API Explorer or your app's Page Access Tokens
             </p>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="isPermanent" 
-              checked={isPermanent}
-              onCheckedChange={(checked) => setIsPermanent(checked === true)}
-            />
-            <Label htmlFor="isPermanent" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Save this page permanently
-            </Label>
           </div>
         </CardContent>
         <CardFooter>
