@@ -246,14 +246,22 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
         throw new Error('No access token found');
       }
 
+      console.log('Connecting with page ID:', id);
+      
       // Fetch lead forms for the page
-      const response = await fetch(`/api/lead-forms?pageId=${id}&accessToken=${encodeURIComponent(token)}`);
+      const apiUrl = `/api/lead-forms?pageId=${id}&accessToken=${encodeURIComponent(token)}`;
+      console.log('API URL:', apiUrl.substring(0, 50) + '...');
+      
+      const response = await fetch(apiUrl);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch lead forms');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+        console.error('API error response:', errorData);
+        throw new Error(errorData.error || 'Failed to fetch lead forms');
       }
       
       const data = await response.json();
+      console.log('Lead forms fetched:', data.forms?.length || 0);
       setLeadForms(data.forms || []);
       setConnected(true);
       toast.success('Connected successfully');
