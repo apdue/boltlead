@@ -247,7 +247,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
       }
 
       // Fetch lead forms for the page
-      const response = await fetch(`/api/lead-forms?pageId=${id}&accessToken=${token}`);
+      const response = await fetch(`/api/lead-forms?pageId=${id}&accessToken=${encodeURIComponent(token)}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch lead forms');
