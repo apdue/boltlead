@@ -77,15 +77,12 @@ const groupPagesByAccount = (pages: DirectPage[]) => {
 };
 
 export function DirectTokenForm({}: DirectTokenFormProps) {
-  const [savedPages, setSavedPages] = useState<DirectPage[]>([]);
   const [selectedPageId, setSelectedPageId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
   const [leadForms, setLeadForms] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('accounts');
   const [selectedAccount, setSelectedAccount] = useState<string>('');
-  const [mounted, setMounted] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [allPages, setAllPages] = useState<DirectPage[]>([]);
   const [accountGroups, setAccountGroups] = useState<Record<string, DirectPage[]>>({});
@@ -128,29 +125,6 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
     fetchAccounts();
   }, []);
 
-  // Load saved pages from localStorage on component mount
-  useEffect(() => {
-    setMounted(true);
-    const storedPages = localStorage.getItem('directPages');
-    if (storedPages) {
-      try {
-        const parsedPages = JSON.parse(storedPages);
-        setSavedPages(parsedPages);
-      } catch (error) {
-        console.error('Error parsing stored pages:', error);
-        // If there's an error parsing, initialize with empty array
-        setSavedPages([]);
-      }
-    }
-  }, []);
-
-  // Save pages to localStorage whenever they change
-  useEffect(() => {
-    if (mounted && savedPages.length > 0) {
-      localStorage.setItem('directPages', JSON.stringify(savedPages));
-    }
-  }, [savedPages, mounted]);
-
   const handleAccountChange = (value: string) => {
     setSelectedAccount(value);
     setSelectedPageId('');
@@ -158,58 +132,6 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
 
   const handlePageSelect = (value: string) => {
     setSelectedPageId(value);
-  };
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    // Reset selected page when switching tabs
-    setSelectedPageId('');
-  };
-
-  const handleSavePage = () => {
-    if (!selectedPageId) {
-      toast.error('Please select a page');
-      return;
-    }
-
-    const selectedPage = allPages.find(p => p.id === selectedPageId);
-    if (!selectedPage) {
-      toast.error('Selected page not found');
-      return;
-    }
-
-    // Check if page already exists in saved pages
-    const existingPageIndex = savedPages.findIndex(p => p.id === selectedPageId);
-    
-    if (existingPageIndex !== -1) {
-      // Update existing page
-      const updatedPages = [...savedPages];
-      updatedPages[existingPageIndex] = {
-        id: selectedPageId,
-        name: selectedPage.name,
-        access_token: selectedPage.access_token,
-        accountName: selectedPage.accountName
-      };
-      setSavedPages(updatedPages);
-      toast.success('Page updated successfully');
-    } else {
-      // Add new page
-      setSavedPages([
-        ...savedPages,
-        {
-          id: selectedPageId,
-          name: selectedPage.name,
-          access_token: selectedPage.access_token,
-          accountName: selectedPage.accountName
-        }
-      ]);
-      toast.success('Page saved successfully');
-    }
-  };
-
-  const handleDeletePage = (id: string) => {
-    setSavedPages(savedPages.filter(p => p.id !== id));
-    toast.success('Page removed from saved list');
   };
 
   const handleConnect = async () => {
@@ -221,9 +143,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
     setLoading(true);
     try {
       // Use the selected page token
-      const selectedPage = selectedPageId ? 
-        (allPages.find(p => p.id === selectedPageId) || savedPages.find(p => p.id === selectedPageId)) : 
-        null;
+      const selectedPage = allPages.find(p => p.id === selectedPageId);
       
       if (!selectedPage) {
         throw new Error('Selected page not found');
@@ -271,160 +191,77 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
           <CardDescription>Select a page to access its lead forms</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="accounts">Account Pages</TabsTrigger>
-              <TabsTrigger value="saved">Saved Pages</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="accounts" className="mt-4">
-              {isLoading ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : Object.keys(accountGroups).length > 0 ? (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="accountSelect">Select Account</Label>
-                    <Select 
-                      value={selectedAccount} 
-                      onValueChange={handleAccountChange}
-                    >
-                      <SelectTrigger id="accountSelect">
-                        <SelectValue placeholder="Select an account" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(accountGroups).map((accountName) => (
-                          <SelectItem key={accountName} value={accountName}>
-                            {accountName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {selectedAccount && accountGroups[selectedAccount] && (
-                    <div className="space-y-2">
-                      <Label htmlFor="pageSelect">Select Page</Label>
-                      <Select 
-                        value={selectedPageId} 
-                        onValueChange={handlePageSelect}
-                      >
-                        <SelectTrigger id="pageSelect">
-                          <SelectValue placeholder="Select a page" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {accountGroups[selectedAccount].map((page) => (
-                            <SelectItem key={page.id} value={page.id}>
-                              {page.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                  
-                  {selectedPageId && (
-                    <div className="p-4 border rounded-md bg-muted/30">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Facebook className="h-5 w-5 text-blue-600" />
-                        <h3 className="font-medium">
-                          {allPages.find(p => p.id === selectedPageId)?.name}
-                        </h3>
-                        <Badge variant="outline" className="ml-auto">
-                          {allPages.find(p => p.id === selectedPageId)?.accountName}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Page ID: {selectedPageId.includes('-') ? selectedPageId.split('-')[0] : selectedPageId}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Token is ready to use
-                      </p>
-                      <div className="flex justify-end mt-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={handleSavePage}
-                        >
-                          <Save className="h-4 w-4 mr-1" />
-                          Save Page
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-muted-foreground mb-4">No accounts found</p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="saved" className="mt-4">
-              {savedPages.length > 0 ? (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="savedPageSelect">Select Saved Page</Label>
-                    <Select 
-                      value={selectedPageId} 
-                      onValueChange={handlePageSelect}
-                    >
-                      <SelectTrigger id="savedPageSelect">
-                        <SelectValue placeholder="Select a saved page" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {savedPages.map((page) => (
-                          <SelectItem key={page.id} value={page.id}>
-                            {page.name} {page.accountName ? `(${page.accountName})` : ''}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {selectedPageId && (
-                    <div className="p-4 border rounded-md bg-muted/30">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Facebook className="h-5 w-5 text-blue-600" />
-                        <h3 className="font-medium">
-                          {savedPages.find(p => p.id === selectedPageId)?.name}
-                        </h3>
-                        {savedPages.find(p => p.id === selectedPageId)?.accountName && (
-                          <Badge variant="outline" className="ml-auto">
-                            {savedPages.find(p => p.id === selectedPageId)?.accountName}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Page ID: {selectedPageId}
-                      </p>
-                      <div className="flex justify-end mt-2">
-                        <Button 
-                          variant="destructive" 
-                          size="sm"
-                          onClick={() => handleDeletePage(selectedPageId)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Remove
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">No saved pages yet</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setActiveTab('accounts')}
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : Object.keys(accountGroups).length > 0 ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="accountSelect">Select Account</Label>
+                <Select 
+                  value={selectedAccount} 
+                  onValueChange={handleAccountChange}
+                >
+                  <SelectTrigger id="accountSelect">
+                    <SelectValue placeholder="Select an account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(accountGroups).map((accountName) => (
+                      <SelectItem key={accountName} value={accountName}>
+                        {accountName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {selectedAccount && accountGroups[selectedAccount] && (
+                <div className="space-y-2">
+                  <Label htmlFor="pageSelect">Select Page</Label>
+                  <Select 
+                    value={selectedPageId} 
+                    onValueChange={handlePageSelect}
                   >
-                    Select from accounts
-                  </Button>
+                    <SelectTrigger id="pageSelect">
+                      <SelectValue placeholder="Select a page" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accountGroups[selectedAccount].map((page) => (
+                        <SelectItem key={page.id} value={page.id}>
+                          {page.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
-            </TabsContent>
-          </Tabs>
+              
+              {selectedPageId && (
+                <div className="p-4 border rounded-md bg-muted/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Facebook className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-medium">
+                      {allPages.find(p => p.id === selectedPageId)?.name}
+                    </h3>
+                    <Badge variant="outline" className="ml-auto">
+                      {allPages.find(p => p.id === selectedPageId)?.accountName}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Page ID: {selectedPageId.includes('-') ? selectedPageId.split('-')[0] : selectedPageId}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Token is ready to use
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-muted-foreground mb-4">No accounts found</p>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button 
@@ -466,12 +303,12 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
               pageId={selectedPageId} 
               pageName={
                 selectedPageId 
-                  ? (allPages.find(p => p.id === selectedPageId)?.name || savedPages.find(p => p.id === selectedPageId)?.name || '') 
+                  ? (allPages.find(p => p.id === selectedPageId)?.name || '') 
                   : ''
               }
               pageToken={
                 selectedPageId 
-                  ? (allPages.find(p => p.id === selectedPageId)?.access_token || savedPages.find(p => p.id === selectedPageId)?.access_token || '') 
+                  ? (allPages.find(p => p.id === selectedPageId)?.access_token || '') 
                   : ''
               }
             />
@@ -490,7 +327,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
           <div className="py-4">
             <p>Please follow these steps:</p>
             <ol className="list-decimal list-inside space-y-2 mt-2">
-              <li>Select a page from your accounts or enter page details manually</li>
+              <li>Select a page from your accounts</li>
               <li>Click the "Connect" button to fetch available lead forms</li>
               <li>Select a lead form from the list that appears</li>
             </ol>
