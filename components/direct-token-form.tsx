@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Plus, Save, Trash2, Facebook } from 'lucide-react';
+import { Loader2, Plus, Save, Trash2, Facebook, Edit, MoreVertical } from 'lucide-react';
 import { LeadFormSelector } from '@/components/lead-form-selector';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
@@ -18,12 +18,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Account {
   id: string;
   name: string;
+  app_id: string;
+  app_secret: string;
+  short_lived_token: string;
   pages: Page[];
 }
 
@@ -38,6 +58,7 @@ interface DirectPage {
   name: string;
   access_token: string;
   accountName?: string;
+  accountId?: string;
 }
 
 interface DirectTokenFormProps {}
@@ -56,7 +77,8 @@ const processAccountsData = (accounts: any[]) => {
           id: pageId,
           name: page.name,
           access_token: page.access_token,
-          accountName: account.name
+          accountName: account.name,
+          accountId: account.id
         });
       });
     }
@@ -83,45 +105,60 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
   const [leadForms, setLeadForms] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string>('');
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [allPages, setAllPages] = useState<DirectPage[]>([]);
   const [accountGroups, setAccountGroups] = useState<Record<string, DirectPage[]>>({});
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Edit account dialog states
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editAccountId, setEditAccountId] = useState<string>('');
+  const [editAccountName, setEditAccountName] = useState<string>('');
+  const [editAppId, setEditAppId] = useState<string>('');
+  const [editAppSecret, setEditAppSecret] = useState<string>('');
+  const [editToken, setEditToken] = useState<string>('');
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Delete account dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteAccountId, setDeleteAccountId] = useState<string>('');
+  const [deleteAccountName, setDeleteAccountName] = useState<string>('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Load accounts from API
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/accounts');
-        if (!response.ok) {
-          throw new Error('Failed to fetch accounts');
-        }
-        
-        const data = await response.json();
-        setAccounts(data.accounts || []);
-        
-        // Process accounts data
-        const pages = processAccountsData(data.accounts || []);
-        setAllPages(pages);
-        
-        // Group pages by account
-        const groups = groupPagesByAccount(pages);
-        setAccountGroups(groups);
-        
-        // Set default selected account if available
-        if (Object.keys(groups).length > 0) {
-          setSelectedAccount(Object.keys(groups)[0]);
-        }
-        
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching accounts:', error);
-        toast.error('Failed to load accounts');
-        setIsLoading(false);
+  const fetchAccounts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/accounts');
+      if (!response.ok) {
+        throw new Error('Failed to fetch accounts');
       }
-    };
-    
+      
+      const data = await response.json();
+      setAccounts(data.accounts || []);
+      
+      // Process accounts data
+      const pages = processAccountsData(data.accounts || []);
+      setAllPages(pages);
+      
+      // Group pages by account
+      const groups = groupPagesByAccount(pages);
+      setAccountGroups(groups);
+      
+      // Set default selected account if available
+      if (Object.keys(groups).length > 0) {
+        setSelectedAccount(Object.keys(groups)[0]);
+      }
+      
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching accounts:', error);
+      toast.error('Failed to load accounts');
+      setIsLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchAccounts();
   }, []);
 
@@ -182,6 +219,105 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
       setLoading(false);
     }
   };
+  
+  const handleEditAccount = (accountName: string) => {
+    const account = accounts.find(a => a.name === accountName);
+    if (account) {
+      setEditAccountId(account.id);
+      setEditAccountName(account.name);
+      setEditAppId(account.app_id);
+      setEditAppSecret(account.app_secret);
+      setEditToken(account.short_lived_token);
+      setEditDialogOpen(true);
+    }
+  };
+  
+  const handleSaveAccountEdit = async () => {
+    if (!editAccountId || !editAccountName) {
+      toast.error('Account ID and name are required');
+      return;
+    }
+    
+    setIsEditing(true);
+    try {
+      const response = await fetch('/api/accounts/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: editAccountId,
+          name: editAccountName,
+          appId: editAppId,
+          appSecret: editAppSecret,
+          shortLivedToken: editToken,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update account');
+      }
+      
+      toast.success('Account updated successfully');
+      setEditDialogOpen(false);
+      
+      // Refresh accounts list
+      await fetchAccounts();
+    } catch (error) {
+      console.error('Error updating account:', error);
+      toast.error('Failed to update account');
+    } finally {
+      setIsEditing(false);
+    }
+  };
+  
+  const handleDeleteAccount = (accountName: string) => {
+    const account = accounts.find(a => a.name === accountName);
+    if (account) {
+      setDeleteAccountId(account.id);
+      setDeleteAccountName(account.name);
+      setDeleteDialogOpen(true);
+    }
+  };
+  
+  const confirmDeleteAccount = async () => {
+    if (!deleteAccountId) {
+      toast.error('Account ID is required');
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/accounts?id=${deleteAccountId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete account');
+      }
+      
+      toast.success('Account deleted successfully');
+      setDeleteDialogOpen(false);
+      
+      // Reset states if the deleted account was selected
+      if (selectedAccount === deleteAccountName) {
+        setSelectedAccount('');
+        setSelectedPageId('');
+        setConnected(false);
+        setLeadForms([]);
+      }
+      
+      // Refresh accounts list
+      await fetchAccounts();
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('Failed to delete account');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="grid gap-4">
@@ -198,7 +334,33 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
           ) : Object.keys(accountGroups).length > 0 ? (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="accountSelect">Select Account</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="accountSelect">Select Account</Label>
+                  {selectedAccount && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Account Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleEditAccount(selectedAccount)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Account
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteAccount(selectedAccount)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Account
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
                 <Select 
                   value={selectedAccount} 
                   onValueChange={handleAccountChange}
@@ -316,6 +478,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
         </Card>
       )}
       
+      {/* Add Lead Form Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -337,6 +500,110 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Edit Account Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Account</DialogTitle>
+            <DialogDescription>
+              Make changes to your account details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={editAccountName}
+                onChange={(e) => setEditAccountName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="appId" className="text-right">
+                App ID
+              </Label>
+              <Input
+                id="appId"
+                value={editAppId}
+                onChange={(e) => setEditAppId(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="appSecret" className="text-right">
+                App Secret
+              </Label>
+              <Input
+                id="appSecret"
+                type="password"
+                value={editAppSecret}
+                onChange={(e) => setEditAppSecret(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="token" className="text-right">
+                Token
+              </Label>
+              <Input
+                id="token"
+                value={editToken}
+                onChange={(e) => setEditToken(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveAccountEdit} disabled={isEditing}>
+              {isEditing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the account "{deleteAccountName}" and all its associated pages.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteAccount}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Account'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

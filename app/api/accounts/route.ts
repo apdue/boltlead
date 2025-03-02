@@ -137,3 +137,95 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const accountId = searchParams.get('id');
+    
+    if (!accountId) {
+      return NextResponse.json(
+        { error: 'Account ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    console.log(`Deleting account with ID: ${accountId}`);
+    
+    // First, delete all pages associated with this account
+    const { error: pagesDeleteError } = await supabase
+      .from('pages')
+      .delete()
+      .eq('account_id', accountId);
+    
+    if (pagesDeleteError) {
+      console.error(`Error deleting pages for account ${accountId}:`, pagesDeleteError);
+      return NextResponse.json(
+        { error: 'Failed to delete account pages' },
+        { status: 500 }
+      );
+    }
+    
+    // Then delete the account itself
+    const { error: accountDeleteError } = await supabase
+      .from('accounts')
+      .delete()
+      .eq('id', accountId);
+    
+    if (accountDeleteError) {
+      console.error(`Error deleting account ${accountId}:`, accountDeleteError);
+      return NextResponse.json(
+        { error: 'Failed to delete account' },
+        { status: 500 }
+      );
+    }
+    
+    // Check if the deleted account was the current account
+    const { data: currentAccountData, error: currentAccountError } = await supabase
+      .from('current_account')
+      .select('*')
+      .eq('id', '1')
+      .single();
+    
+    if (!currentAccountError && currentAccountData?.account_id === accountId) {
+      // Get the first available account to set as current
+      const { data: remainingAccounts, error: remainingAccountsError } = await supabase
+        .from('accounts')
+        .select('id')
+        .limit(1);
+      
+      if (!remainingAccountsError && remainingAccounts && remainingAccounts.length > 0) {
+        // Set a new current account
+        const { error: updateCurrentError } = await supabase
+          .from('current_account')
+          .update({ 
+            account_id: remainingAccounts[0].id,
+            last_updated: new Date().toISOString()
+          })
+          .eq('id', '1');
+        
+        if (updateCurrentError) {
+          console.error('Error updating current account after deletion:', updateCurrentError);
+        }
+      } else {
+        // No accounts left, clear the current account
+        const { error: clearCurrentError } = await supabase
+          .from('current_account')
+          .delete()
+          .eq('id', '1');
+        
+        if (clearCurrentError) {
+          console.error('Error clearing current account after deletion:', clearCurrentError);
+        }
+      }
+    }
+    
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting account:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete account', message: error.message },
+      { status: 500 }
+    );
+  }
+}
