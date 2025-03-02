@@ -79,9 +79,6 @@ const groupPagesByAccount = (pages: DirectPage[]) => {
 export function DirectTokenForm({}: DirectTokenFormProps) {
   const [savedPages, setSavedPages] = useState<DirectPage[]>([]);
   const [selectedPageId, setSelectedPageId] = useState<string>('');
-  const [pageId, setPageId] = useState<string>('');
-  const [pageName, setPageName] = useState<string>('');
-  const [pageToken, setPageToken] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
   const [leadForms, setLeadForms] = useState<any[]>([]);
@@ -157,48 +154,41 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
   const handleAccountChange = (value: string) => {
     setSelectedAccount(value);
     setSelectedPageId('');
-    setPageId('');
-    setPageName('');
-    setPageToken('');
   };
 
   const handlePageSelect = (value: string) => {
     setSelectedPageId(value);
-    const selectedPage = allPages.find(p => p.id === value);
-    if (selectedPage) {
-      setPageId(value.includes('-') ? value.split('-')[0] : value);
-      setPageName(selectedPage.name);
-      setPageToken(selectedPage.access_token);
-    }
   };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    // Reset form when switching tabs
-    if (value === 'manual') {
-      setPageId('');
-      setPageName('');
-      setPageToken('');
-    }
+    // Reset selected page when switching tabs
+    setSelectedPageId('');
   };
 
   const handleSavePage = () => {
-    if (!pageId || !pageName || !pageToken) {
-      toast.error('Please fill in all fields');
+    if (!selectedPageId) {
+      toast.error('Please select a page');
+      return;
+    }
+
+    const selectedPage = allPages.find(p => p.id === selectedPageId);
+    if (!selectedPage) {
+      toast.error('Selected page not found');
       return;
     }
 
     // Check if page already exists in saved pages
-    const existingPageIndex = savedPages.findIndex(p => p.id === pageId);
+    const existingPageIndex = savedPages.findIndex(p => p.id === selectedPageId);
     
     if (existingPageIndex !== -1) {
       // Update existing page
       const updatedPages = [...savedPages];
       updatedPages[existingPageIndex] = {
-        id: pageId,
-        name: pageName,
-        access_token: pageToken,
-        accountName: selectedAccount || 'Manual Entry'
+        id: selectedPageId,
+        name: selectedPage.name,
+        access_token: selectedPage.access_token,
+        accountName: selectedPage.accountName
       };
       setSavedPages(updatedPages);
       toast.success('Page updated successfully');
@@ -207,19 +197,14 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
       setSavedPages([
         ...savedPages,
         {
-          id: pageId,
-          name: pageName,
-          access_token: pageToken,
-          accountName: selectedAccount || 'Manual Entry'
+          id: selectedPageId,
+          name: selectedPage.name,
+          access_token: selectedPage.access_token,
+          accountName: selectedPage.accountName
         }
       ]);
       toast.success('Page saved successfully');
     }
-
-    // Reset form
-    setPageId('');
-    setPageName('');
-    setPageToken('');
   };
 
   const handleDeletePage = (id: string) => {
@@ -228,19 +213,24 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
   };
 
   const handleConnect = async () => {
-    if (!selectedPageId && !pageId) {
-      toast.error('Please select or enter a page');
+    if (!selectedPageId) {
+      toast.error('Please select a page');
       return;
     }
 
     setLoading(true);
     try {
-      // Use the selected page token or manually entered token
-      const token = selectedPageId ? 
-        allPages.find(p => p.id === selectedPageId)?.access_token : 
-        pageToken;
+      // Use the selected page token
+      const selectedPage = selectedPageId ? 
+        (allPages.find(p => p.id === selectedPageId) || savedPages.find(p => p.id === selectedPageId)) : 
+        null;
       
-      const id = selectedPageId || pageId;
+      if (!selectedPage) {
+        throw new Error('Selected page not found');
+      }
+
+      const token = selectedPage.access_token;
+      const id = selectedPageId;
       
       if (!token) {
         throw new Error('No access token found');
@@ -282,10 +272,9 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="accounts">Account Pages</TabsTrigger>
               <TabsTrigger value="saved">Saved Pages</TabsTrigger>
-              <TabsTrigger value="manual">Manual Entry</TabsTrigger>
             </TabsList>
             
             <TabsContent value="accounts" className="mt-4">
@@ -352,6 +341,16 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
                       <p className="text-xs text-muted-foreground mt-1">
                         Token is ready to use
                       </p>
+                      <div className="flex justify-end mt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleSavePage}
+                        >
+                          <Save className="h-4 w-4 mr-1" />
+                          Save Page
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -422,58 +421,8 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
                   >
                     Select from accounts
                   </Button>
-                  <span className="mx-2 text-muted-foreground">or</span>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setActiveTab('manual')}
-                  >
-                    Add manually
-                  </Button>
                 </div>
               )}
-            </TabsContent>
-            
-            <TabsContent value="manual" className="mt-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="pageId">Page ID</Label>
-                  <Input 
-                    id="pageId" 
-                    placeholder="Enter Facebook Page ID" 
-                    value={pageId}
-                    onChange={(e) => setPageId(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="pageName">Page Name</Label>
-                  <Input 
-                    id="pageName" 
-                    placeholder="Enter Page Name" 
-                    value={pageName}
-                    onChange={(e) => setPageName(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="pageToken">Page Access Token</Label>
-                  <Input 
-                    id="pageToken" 
-                    placeholder="Enter Page Access Token" 
-                    value={pageToken}
-                    onChange={(e) => setPageToken(e.target.value)}
-                  />
-                </div>
-                
-                <Button 
-                  onClick={handleSavePage}
-                  disabled={!pageId || !pageName || !pageToken}
-                  className="w-full"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Page
-                </Button>
-              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -481,7 +430,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
           <Button 
             variant="outline" 
             onClick={() => setDialogOpen(true)}
-            disabled={!selectedPageId && !pageId}
+            disabled={!selectedPageId}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Lead Form
@@ -489,7 +438,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
           
           <Button 
             onClick={handleConnect}
-            disabled={(!selectedPageId && !pageId) || loading}
+            disabled={(!selectedPageId) || loading}
           >
             {loading ? (
               <>
@@ -514,16 +463,16 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
           <CardContent>
             <LeadFormSelector 
               forms={leadForms} 
-              pageId={selectedPageId || pageId} 
+              pageId={selectedPageId} 
               pageName={
                 selectedPageId 
                   ? (allPages.find(p => p.id === selectedPageId)?.name || savedPages.find(p => p.id === selectedPageId)?.name || '') 
-                  : pageName
+                  : ''
               }
               pageToken={
                 selectedPageId 
                   ? (allPages.find(p => p.id === selectedPageId)?.access_token || savedPages.find(p => p.id === selectedPageId)?.access_token || '') 
-                  : pageToken
+                  : ''
               }
             />
           </CardContent>
