@@ -413,9 +413,6 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
                   <p className="text-xs text-muted-foreground">
                     Page ID: {selectedPageId.includes('-') ? selectedPageId.split('-')[0] : selectedPageId}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Token is ready to use
-                  </p>
                 </div>
               )}
             </div>
@@ -545,17 +542,13 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
                 className="col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="token" className="text-right">
-                Token
-              </Label>
-              <Input
-                id="token"
-                value={editToken}
-                onChange={(e) => setEditToken(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
+            {/* Token field is hidden but still maintained in state for functionality */}
+            <input
+              type="hidden"
+              id="token"
+              value={editToken}
+              onChange={(e) => setEditToken(e.target.value)}
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>

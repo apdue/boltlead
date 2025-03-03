@@ -48,6 +48,11 @@ export function AccountSelector() {
             const expiryDate = new Date(currentAccount.longLivedTokenExpiry);
             const now = new Date();
             setTokenStatus(expiryDate > now ? 'valid' : 'expired');
+            
+            // Auto-refresh token if expired
+            if (expiryDate <= now) {
+              refreshToken(data.currentAccountId || data.accounts[0].id);
+            }
           }
         }
         setLoading(false);
@@ -82,7 +87,13 @@ export function AccountSelector() {
       if (selectedAccount) {
         const expiryDate = new Date(selectedAccount.longLivedTokenExpiry);
         const now = new Date();
-        setTokenStatus(expiryDate > now ? 'valid' : 'expired');
+        const isValid = expiryDate > now;
+        setTokenStatus(isValid ? 'valid' : 'expired');
+        
+        // Auto-refresh token if expired
+        if (!isValid) {
+          refreshToken(accountId);
+        }
       }
       
       toast.success(`Switched to account: ${accounts.find(acc => acc.id === accountId)?.name}`);
@@ -92,15 +103,14 @@ export function AccountSelector() {
     }
   };
 
-  const refreshToken = async () => {
+  const refreshToken = async (accountId = currentAccountId) => {
     try {
-      setLoading(true);
       const response = await fetch('/api/accounts/refresh-token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ accountId: currentAccountId }),
+        body: JSON.stringify({ accountId }),
       });
       
       if (!response.ok) {
@@ -113,17 +123,15 @@ export function AccountSelector() {
       // Update accounts with new token data
       setAccounts(prevAccounts => 
         prevAccounts.map(acc => 
-          acc.id === currentAccountId ? { ...acc, ...data.account } : acc
+          acc.id === accountId ? { ...acc, ...data.account } : acc
         )
       );
       
       setTokenStatus('valid');
-      toast.success('Token refreshed successfully');
+      console.log('Token refreshed successfully');
     } catch (error: any) {
       console.error('Error refreshing token:', error);
-      toast.error(error.message || 'Failed to refresh token');
-    } finally {
-      setLoading(false);
+      // Silent failure - don't show toast to user
     }
   };
 
@@ -182,43 +190,7 @@ export function AccountSelector() {
               ))}
             </SelectContent>
           </Select>
-          
-          {currentAccount && (
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Token Status:</span>
-                <span className={`text-sm ${tokenStatus === 'valid' ? 'text-green-500' : 'text-red-500'}`}>
-                  {tokenStatus === 'valid' ? 'Valid' : 'Expired'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Expiry Date:</span>
-                <span className="text-sm">
-                  {currentAccount.longLivedTokenExpiry ? 
-                    new Date(currentAccount.longLivedTokenExpiry).toLocaleDateString() : 
-                    'Not set'}
-                </span>
-              </div>
-            </div>
-          )}
         </CardContent>
-        <CardFooter>
-          <Button 
-            onClick={refreshToken} 
-            disabled={loading || !currentAccount}
-            variant={tokenStatus === 'expired' ? 'destructive' : 'outline'}
-            className="w-full"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Refreshing Token
-              </>
-            ) : (
-              'Refresh Token'
-            )}
-          </Button>
-        </CardFooter>
       </Card>
       
       {currentAccount && (currentAccount.pages?.length > 0 || tokenStatus === 'valid') && (
