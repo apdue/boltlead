@@ -65,37 +65,37 @@ interface DirectTokenFormProps {}
 
 // Process accounts data to create a list of pages with account info
 const processAccountsData = (accounts: any[]) => {
-  const allPages: DirectPage[] = [];
+const allPages: DirectPage[] = [];
   accounts.forEach(account => {
     if (account.pages && Array.isArray(account.pages)) {
       account.pages.forEach((page: any) => {
-        // For pages with duplicate IDs across accounts, make the ID unique
-        const isDuplicate = allPages.some(p => p.id === page.id && p.accountName !== account.name);
-        const pageId = isDuplicate ? `${page.id}-${account.id}` : page.id;
-        
-        allPages.push({
-          id: pageId,
-          name: page.name,
-          access_token: page.access_token,
+    // For pages with duplicate IDs across accounts, make the ID unique
+    const isDuplicate = allPages.some(p => p.id === page.id && p.accountName !== account.name);
+    const pageId = isDuplicate ? `${page.id}-${account.id}` : page.id;
+    
+    allPages.push({
+      id: pageId,
+      name: page.name,
+      access_token: page.access_token,
           accountName: account.name,
           accountId: account.id
-        });
-      });
-    }
+    });
   });
+    }
+});
   return allPages;
 };
 
 // Group pages by account
 const groupPagesByAccount = (pages: DirectPage[]) => {
   return pages.reduce((groups, page) => {
-    const accountName = page.accountName || 'Other';
-    if (!groups[accountName]) {
-      groups[accountName] = [];
-    }
-    groups[accountName].push(page);
-    return groups;
-  }, {} as Record<string, DirectPage[]>);
+  const accountName = page.accountName || 'Other';
+  if (!groups[accountName]) {
+    groups[accountName] = [];
+  }
+  groups[accountName].push(page);
+  return groups;
+}, {} as Record<string, DirectPage[]>);
 };
 
 export function DirectTokenForm({}: DirectTokenFormProps) {
@@ -219,7 +219,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
       setLoading(false);
     }
   };
-  
+
   const handleEditAccount = (accountName: string) => {
     const account = accounts.find(a => a.name === accountName);
     if (account) {
@@ -237,7 +237,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
       toast.error('Account ID and name are required');
       return;
     }
-    
+
     setIsEditing(true);
     try {
       const response = await fetch('/api/accounts/update', {
@@ -304,8 +304,8 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
       // Reset states if the deleted account was selected
       if (selectedAccount === deleteAccountName) {
         setSelectedAccount('');
-        setSelectedPageId('');
-        setConnected(false);
+    setSelectedPageId('');
+    setConnected(false);
         setLeadForms([]);
       }
       
@@ -332,8 +332,8 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : Object.keys(accountGroups).length > 0 ? (
-            <div className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-4">
+                <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="accountSelect">Select Account</Label>
                   {selectedAccount && (
@@ -361,23 +361,23 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
                     </DropdownMenu>
                   )}
                 </div>
-                <Select 
-                  value={selectedAccount} 
-                  onValueChange={handleAccountChange}
-                >
-                  <SelectTrigger id="accountSelect">
-                    <SelectValue placeholder="Select an account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(accountGroups).map((accountName) => (
-                      <SelectItem key={accountName} value={accountName}>
-                        {accountName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
+                  <Select 
+                    value={selectedAccount} 
+                    onValueChange={handleAccountChange}
+                  >
+                    <SelectTrigger id="accountSelect">
+                      <SelectValue placeholder="Select an account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(accountGroups).map((accountName) => (
+                        <SelectItem key={accountName} value={accountName}>
+                          {accountName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
               {selectedAccount && accountGroups[selectedAccount] && (
                 <div className="space-y-2">
                   <Label htmlFor="pageSelect">Select Page</Label>
@@ -398,29 +398,29 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
                   </Select>
                 </div>
               )}
-              
-              {selectedPageId && (
-                <div className="p-4 border rounded-md bg-muted/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Facebook className="h-5 w-5 text-blue-600" />
-                    <h3 className="font-medium">
-                      {allPages.find(p => p.id === selectedPageId)?.name}
-                    </h3>
-                    <Badge variant="outline" className="ml-auto">
-                      {allPages.find(p => p.id === selectedPageId)?.accountName}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Page ID: {selectedPageId.includes('-') ? selectedPageId.split('-')[0] : selectedPageId}
-                  </p>
+                
+                {selectedPageId && (
+                  <div className="p-4 border rounded-md bg-muted/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Facebook className="h-5 w-5 text-blue-600" />
+                      <h3 className="font-medium">
+                        {allPages.find(p => p.id === selectedPageId)?.name}
+                      </h3>
+                      <Badge variant="outline" className="ml-auto">
+                        {allPages.find(p => p.id === selectedPageId)?.accountName}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Page ID: {selectedPageId.includes('-') ? selectedPageId.split('-')[0] : selectedPageId}
+                    </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+              <p className="text-muted-foreground mb-4">No accounts found</p>
                 </div>
               )}
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <p className="text-muted-foreground mb-4">No accounts found</p>
-            </div>
-          )}
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button 
@@ -433,7 +433,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
           </Button>
           
           <Button 
-            onClick={handleConnect}
+            onClick={handleConnect} 
             disabled={(!selectedPageId) || loading}
           >
             {loading ? (
@@ -465,7 +465,7 @@ export function DirectTokenForm({}: DirectTokenFormProps) {
                   ? (allPages.find(p => p.id === selectedPageId)?.name || '') 
                   : ''
               }
-              pageToken={
+          pageToken={
                 selectedPageId 
                   ? (allPages.find(p => p.id === selectedPageId)?.access_token || '') 
                   : ''

@@ -8,25 +8,29 @@ export function MainNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center space-x-4 lg:space-x-6">
-      <Link
-        href="/"
-        className={cn(
-          "text-sm font-medium transition-colors hover:text-primary",
-          pathname === "/" ? "text-primary" : "text-muted-foreground"
-        )}
-      >
-        Lead Forms Manager
-      </Link>
-      <Link
-        href="/balance-checker"
-        className={cn(
-          "text-sm font-medium transition-colors hover:text-primary",
-          pathname === "/balance-checker" ? "text-primary" : "text-muted-foreground"
-        )}
-      >
-        Balance Checker
-      </Link>
+    <nav className="w-full">
+      <div className="grid grid-cols-2 gap-2">
+        <Link
+          href="/"
+          className={cn(
+            'inline-flex h-16 w-full items-center justify-center rounded-lg bg-muted px-6 font-medium transition-colors hover:bg-muted/80 hover:text-primary',
+            pathname === '/' &&
+              'bg-primary/10 text-primary hover:bg-primary/20'
+          )}
+        >
+          Lead Forms Manager
+        </Link>
+        <Link
+          href="/balance-checker"
+          className={cn(
+            'inline-flex h-16 w-full items-center justify-center rounded-lg bg-muted px-6 font-medium transition-colors hover:bg-muted/80 hover:text-primary',
+            pathname === '/balance-checker' &&
+              'bg-primary/10 text-primary hover:bg-primary/20'
+          )}
+        >
+          Balance Checker
+        </Link>
+      </div>
     </nav>
   );
 } 
